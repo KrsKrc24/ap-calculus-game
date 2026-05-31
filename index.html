@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AP Calculus Review</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMath()"></script>
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --card: #22222f;
+      --accent: #7c6af7;
+      --accent2: #a78bfa;
+      --correct: #34d399;
+      --wrong: #f87171;
+      --text: #e2e2ef;
+      --muted: #8888aa;
+      --border: #2e2e42;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .screen { display: none; width: 100%; max-width: 760px; padding: 32px 20px; }
+    .screen.active { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+
+    /* ── HOME ── */
+    .logo { font-size: 2.8rem; font-weight: 800; letter-spacing: -1px; text-align: center; }
+    .logo span { color: var(--accent2); }
+    .tagline { color: var(--muted); font-size: 1.05rem; text-align: center; }
+
+    .stats-bar {
+      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    }
+    .stat-chip {
+      background: var(--card); border: 1px solid var(--border); border-radius: 40px;
+      padding: 8px 20px; font-size: 0.88rem; color: var(--muted);
+    }
+    .stat-chip strong { color: var(--text); }
+
+    /* ── TOPICS ── */
+    .section-label {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--muted); align-self: flex-start;
+    }
+    .topic-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px; width: 100%;
+    }
+    .topic-btn {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px 16px; cursor: pointer; transition: all 0.15s; text-align: left;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .topic-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .topic-btn .t-name { font-weight: 600; font-size: 0.95rem; }
+    .topic-btn .t-count { font-size: 0.78rem; color: var(--muted); }
+    .topic-btn.mixed { border-color: var(--accent); background: linear-gradient(135deg,#1e1b3a,#22222f); }
+    .topic-btn.mixed .t-name { color: var(--accent2); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 14px 36px; border-radius: 40px; border: none; cursor: pointer;
+      font-size: 1rem; font-weight: 700; transition: all 0.15s; letter-spacing: 0.3px;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ── QUESTION CARD ── */
+    .progress-row {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; font-size: 0.85rem; color: var(--muted);
+    }
+    .progress-bar-track {
+      width: 100%; height: 4px; background: var(--border); border-radius: 2px;
+    }
+    .progress-bar-fill {
+      height: 100%; background: var(--accent); border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+    .streak-badge {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: #fff; border-radius: 20px; padding: 4px 12px;
+      font-size: 0.8rem; font-weight: 700;
+    }
+
+    .q-card {
+      width: 100%; background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px 24px; display: flex; flex-direction: column; gap: 16px;
+    }
+    .q-topic-label {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--accent2);
+    }
+    .q-text { font-size: 1.05rem; line-height: 1.6; }
+
+    .choices { display: flex; flex-direction: column; gap: 10px; }
+    .choice-btn {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 18px; cursor: pointer; text-align: left;
+      font-size: 0.95rem; color: var(--text); transition: all 0.15s;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .choice-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--card); }
+    .choice-btn .letter {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.8rem; flex-shrink: 0;
+    }
+    .choice-btn.correct { border-color: var(--correct); background: #0d2e22; }
+    .choice-btn.correct .letter { background: var(--correct); color: #000; }
+    .choice-btn.wrong { border-color: var(--wrong); background: #2e0d0d; }
+    .choice-btn.wrong .letter { background: var(--wrong); color: #000; }
+    .choice-btn:disabled { cursor: not-allowed; }
+
+    /* ── SOLUTION ── */
+    .solution-box {
+      display: none; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px; margin-top: 4px;
+    }
+    .solution-box.show { display: block; }
+    .solution-box h4 { font-size: 0.8rem; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--correct); margin-bottom: 10px; }
+    .solution-box p, .solution-box li { font-size: 0.92rem; line-height: 1.7; color: var(--muted); }
+    .solution-box strong { color: var(--text); }
+    .solution-box ol { padding-left: 18px; }
+
+    /* ── RESULT FLASH ── */
+    .result-flash {
+      padding: 10px 20px; border-radius: 8px; font-weight: 700;
+      font-size: 0.95rem; text-align: center; display: none;
+    }
+    .result-flash.show { display: block; }
+    .result-flash.correct { background: #0d2e22; color: var(--correct); border: 1px solid var(--correct); }
+    .result-flash.wrong { background: #2e0d0d; color: var(--wrong); border: 1px solid var(--wrong); }
+
+    .timer {
+      font-size: 1.2rem; font-weight: 700; color: var(--accent2);
+      font-variant-numeric: tabular-nums;
+    }
+    .timer.warning { color: var(--wrong); animation: pulse 0.5s ease infinite alternate; }
+    @keyframes pulse { from { opacity: 1; } to { opacity: 0.5; } }
+
+    /* ── SCORE SCREEN ── */
+    .score-ring {
+      width: 140px; height: 140px; position: relative;
+    }
+    .score-ring svg { transform: rotate(-90deg); }
+    .score-ring .ring-bg { fill: none; stroke: var(--border); stroke-width: 10; }
+    .score-ring .ring-fill {
+      fill: none; stroke: var(--accent); stroke-width: 10;
+      stroke-linecap: round; stroke-dasharray: 352; stroke-dashoffset: 352;
+      transition: stroke-dashoffset 1s ease;
+    }
+    .ring-label {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      text-align: center;
+    }
+    .ring-label .big { font-size: 2rem; font-weight: 800; }
+    .ring-label .small { font-size: 0.75rem; color: var(--muted); }
+
+    .score-breakdown {
+      width: 100%; display: flex; flex-direction: column; gap: 8px;
+    }
+    .breakdown-row {
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; font-size: 0.9rem;
+    }
+    .breakdown-row .tag { color: var(--muted); }
+    .breakdown-row .val { font-weight: 700; }
+    .breakdown-row .val.good { color: var(--correct); }
+    .breakdown-row .val.bad { color: var(--wrong); }
+
+    .suggestion-box {
+      width: 100%; background: var(--card); border: 1px solid var(--accent);
+      border-radius: var(--radius); padding: 18px 20px;
+    }
+    .suggestion-box h3 { font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--accent2); margin-bottom: 8px; }
+    .suggestion-box p { font-size: 0.92rem; color: var(--muted); line-height: 1.6; }
+
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════ HOME SCREEN ════════════════ -->
+<section id="home" class="screen active">
+  <div class="logo">AP <span>Calculus</span> Review</div>
+  <p class="tagline">Master every topic before the exam. One question at a time.</p>
+
+  <div class="stats-bar" id="homeStats">
+    <div class="stat-chip">Questions: <strong>22</strong></div>
+    <div class="stat-chip">Topics: <strong>8</strong></div>
+    <div class="stat-chip" id="bestScore">Best Score: <strong>—</strong></div>
+  </div>
+
+  <button class="btn btn-primary" onclick="showTopics()">Start Game</button>
+  <button class="btn btn-ghost" onclick="showTopics(true)">Quick Mixed Review</button>
+</section>
+
+<!-- ════════════════ TOPICS SCREEN ════════════════ -->
+<section id="topics" class="screen">
+  <div class="logo" style="font-size:1.8rem">Choose a Topic</div>
+  <div class="topic-grid" id="topicGrid"></div>
+  <button class="btn btn-ghost" onclick="show('home')">Back</button>
+</section>
+
+<!-- ════════════════ QUESTION SCREEN ════════════════ -->
+<section id="question" class="screen">
+  <div style="width:100%; display:flex; flex-direction:column; gap:10px;">
+    <div class="progress-row">
+      <span id="qProgress">Question 1 of 10</span>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <span class="streak-badge" id="streakBadge" style="display:none">🔥 0</span>
+        <span class="timer" id="timer">0:30</span>
+      </div>
+    </div>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-topic-label" id="qTopicLabel"></div>
+    <div class="q-text" id="qText"></div>
+    <div class="choices" id="choicesContainer"></div>
+    <div class="result-flash" id="resultFlash"></div>
+    <div class="solution-box" id="solutionBox">
+      <h4>Worked Solution</h4>
+      <div id="solutionContent"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="nextBtn" style="display:none" onclick="nextQuestion()">
+    Next Question →
+  </button>
+  <button class="btn btn-ghost" onclick="quitGame()">Quit</button>
+</section>
+
+<!-- ════════════════ SCORE SCREEN ════════════════ -->
+<section id="score" class="screen">
+  <div class="logo" style="font-size:1.8rem">Results</div>
+
+  <div class="score-ring">
+    <svg viewBox="0 0 120 120" width="140" height="140">
+      <circle class="ring-bg" cx="60" cy="60" r="56"/>
+      <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="56"/>
+    </svg>
+    <div class="ring-label">
+      <div class="big" id="scoreNum">0</div>
+      <div class="small" id="scoreDen">/ 0</div>
+    </div>
+  </div>
+
+  <div class="score-breakdown" id="scoreBreakdown"></div>
+  <div class="suggestion-box" id="suggestionBox"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="replayTopic()">Play Again</button>
+    <button class="btn btn-ghost" onclick="show('home')">Home</button>
+  </div>
+</section>
+
+<script>
+// ─────────────────────────────────────────────
+//  QUESTION BANK
+// ─────────────────────────────────────────────
+const QUESTIONS = [
+  // ── Limits & Continuity ──
+  {
+    topic: "Limits & Continuity",
+    text: "Find \\(\\displaystyle\\lim_{x \\to 2} \\frac{x^2-4}{x-2}\\).",
+    choices: ["2","4","0","Does not exist"],
+    answer: 1,
+    solution: `<ol>
+      <li>Factor the numerator: \\(x^2-4=(x-2)(x+2)\\)</li>
+      <li>Cancel the common factor: \\(\\dfrac{(x-2)(x+2)}{x-2}=x+2\\)</li>
+      <li>Substitute \\(x=2\\): \\(2+2=\\boxed{4}\\)</li>
+    </ol>`
+  },
+  {
+    topic: "Limits & Continuity",
+    text: "Is \\(f(x)=\\dfrac{x^2-9}{x-3}\\) continuous at \\(x=3\\)?",
+    choices: ["Yes, f(3) = 6","No — there is a removable discontinuity at x = 3","Yes, f(3) = 0","No — there is a jump discontinuity"],
+    answer: 1,
+    solution: `<p>At \\(x=3\\) the function is undefined (0/0 form), creating a <strong>hole</strong> (removable discontinuity).<br>
+    Factor: \\(\\dfrac{(x-3)(x+3)}{x-3}=x+3\\), so the limit exists and equals 6, but \\(f(3)\\) is undefined. Not continuous.</p>`
+  },
+  {
+    topic: "Limits & Continuity",
+    text: "Using L'Hôpital's Rule, find \\(\\displaystyle\\lim_{x \\to 0}\\frac{\\sin x}{x}\\).",
+    choices: ["0","∞","1","Does not exist"],
+    answer: 2,
+    solution: `<ol>
+      <li>The form is \\(\\tfrac{0}{0}\\), so apply L'Hôpital: \\(\\dfrac{d}{dx}[\\sin x]=\\cos x\\), \\(\\dfrac{d}{dx}[x]=1\\)</li>
+      <li>New limit: \\(\\displaystyle\\lim_{x\\to 0}\\dfrac{\\cos x}{1}=\\cos 0=\\boxed{1}\\)</li>
+    </ol>`
+  },
+
+  // ── Derivatives ──
+  {
+    topic: "Derivatives",
+    text: "Find \\(f'(x)\\) if \\(f(x)=4x^3-5x^2+7x-9\\).",
+    choices: ["12x² − 10x + 7","12x² − 5x + 7","4x² − 10x + 7","12x³ − 10x² + 7x"],
+    answer: 0,
+    solution: `<p>Apply the power rule term by term:</p>
+    <ul>
+      <li>\\(\\frac{d}{dx}[4x^3]=12x^2\\)</li>
+      <li>\\(\\frac{d}{dx}[-5x^2]=-10x\\)</li>
+      <li>\\(\\frac{d}{dx}[7x]=7\\)</li>
+      <li>Constant \\(-9\\) vanishes</li>
+    </ul>
+    <p><strong>Answer: \\(f'(x)=12x^2-10x+7\\)</strong></p>`
+  },
+  {
+    topic: "Derivatives",
+    text: "Find \\(f'(x)\\) if \\(f(x)=\\sin(x^2)\\). (Chain Rule)",
+    choices: ["cos(x²)","2x cos(x²)","2x sin(x²)","x cos(x²)"],
+    answer: 1,
+    solution: `<ol>
+      <li>Outer function: \\(\\sin(u)\\), inner: \\(u=x^2\\)</li>
+      <li>\\(f'(x)=\\cos(x^2)\\cdot\\frac{d}{dx}[x^2]=\\cos(x^2)\\cdot 2x\\)</li>
+      <li><strong>\\(f'(x)=2x\\cos(x^2)\\)</strong></li>
+    </ol>`
+  },
+  {
+    topic: "Derivatives",
+    text: "Find \\(f'(x)\\) if \\(f(x)=x^2 e^x\\). (Product Rule)",
+    choices: ["2x eˣ","x² eˣ","2x eˣ + x² eˣ","eˣ(x² − 2x)"],
+    answer: 2,
+    solution: `<p>Product Rule: \\((uv)'=u'v+uv'\\)<br>
+    \\(u=x^2,\\;u'=2x,\\;v=e^x,\\;v'=e^x\\)<br>
+    \\(f'(x)=2x\\cdot e^x+x^2\\cdot e^x=e^x(2x+x^2)\\)</p>`
+  },
+  {
+    topic: "Derivatives",
+    text: "Find \\(f'(x)\\) if \\(f(x)=\\dfrac{x^2+1}{x-3}\\). (Quotient Rule)",
+    choices: ["(2x(x−3) − (x²+1)) / (x−3)²","(2x) / 1","(x²−6x−1) / (x−3)²","(2x(x−3) + (x²+1)) / (x−3)²"],
+    answer: 0,
+    solution: `<p>Quotient Rule: \\(\\left(\\dfrac{u}{v}\\right)'=\\dfrac{u'v-uv'}{v^2}\\)<br>
+    \\(u=x^2+1,\\;u'=2x,\\;v=x-3,\\;v'=1\\)<br>
+    \\(f'=\\dfrac{2x(x-3)-(x^2+1)}{(x-3)^2}=\\dfrac{x^2-6x-1}{(x-3)^2}\\)</p>`
+  },
+  {
+    topic: "Derivatives",
+    text: "Given \\(x^2+y^2=25\\), find \\(\\dfrac{dy}{dx}\\). (Implicit Differentiation)",
+    choices: ["x/y","−x/y","y/x","−y/x"],
+    answer: 1,
+    solution: `<ol>
+      <li>Differentiate both sides w.r.t. \\(x\\): \\(2x+2y\\frac{dy}{dx}=0\\)</li>
+      <li>Solve: \\(\\frac{dy}{dx}=\\dfrac{-2x}{2y}=\\boxed{-\\dfrac{x}{y}}\\)</li>
+    </ol>`
+  },
+
+  // ── Applications of Derivatives ──
+  {
+    topic: "Applications of Derivatives",
+    text: "Find the equation of the tangent line to \\(f(x)=x^2+3x\\) at \\(x=2\\).",
+    choices: ["y = 7x − 4","y = 7x + 4","y = 4x − 7","y = 7x − 10"],
+    answer: 0,
+    solution: `<ol>
+      <li>\\(f(2)=4+6=10\\). Point: \\((2,10)\\)</li>
+      <li>\\(f'(x)=2x+3\\), so \\(f'(2)=7\\) (slope)</li>
+      <li>Point-slope: \\(y-10=7(x-2)\\Rightarrow y=7x-4\\)</li>
+    </ol>`
+  },
+  {
+    topic: "Applications of Derivatives",
+    text: "Find the critical points of \\(f(x)=x^3-6x^2+9x\\).",
+    choices: ["x = 0 and x = 3","x = 1 and x = 3","x = −1 and x = 3","x = 2 and x = 4"],
+    answer: 1,
+    solution: `<ol>
+      <li>\\(f'(x)=3x^2-12x+9=3(x^2-4x+3)=3(x-1)(x-3)\\)</li>
+      <li>Set \\(f'(x)=0\\): \\(x=1\\) and \\(x=3\\)</li>
+    </ol>`
+  },
+  {
+    topic: "Applications of Derivatives",
+    text: "A rectangle has perimeter 40. What dimensions give the maximum area?",
+    choices: ["5 × 15","10 × 10","8 × 12","4 × 16"],
+    answer: 1,
+    solution: `<ol>
+      <li>Let width \\(=x\\), then height \\(=20-x\\). Area: \\(A=x(20-x)=20x-x^2\\)</li>
+      <li>\\(A'=20-2x=0\\Rightarrow x=10\\)</li>
+      <li>Dimensions: \\(\\boxed{10\\times 10}\\). A square maximizes area for fixed perimeter.</li>
+    </ol>`
+  },
+  {
+    topic: "Applications of Derivatives",
+    text: "The radius of a circle grows at 3 cm/s. How fast is the area increasing when \\(r=5\\) cm?",
+    choices: ["15π cm²/s","30π cm²/s","25π cm²/s","10π cm²/s"],
+    answer: 1,
+    solution: `<ol>
+      <li>\\(A=\\pi r^2\\). Differentiate w.r.t. \\(t\\): \\(\\dfrac{dA}{dt}=2\\pi r\\dfrac{dr}{dt}\\)</li>
+      <li>Substitute \\(r=5\\), \\(\\dfrac{dr}{dt}=3\\): \\(\\dfrac{dA}{dt}=2\\pi(5)(3)=\\boxed{30\\pi}\\) cm²/s</li>
+    </ol>`
+  },
+
+  // ── Integrals ──
+  {
+    topic: "Integrals",
+    text: "Evaluate \\(\\displaystyle\\int_0^3 x^2\\,dx\\).",
+    choices: ["9","27","3","6"],
+    answer: 0,
+    solution: `<ol>
+      <li>Antiderivative: \\(\\dfrac{x^3}{3}\\)</li>
+      <li>\\(\\left[\\dfrac{x^3}{3}\\right]_0^3=\\dfrac{27}{3}-0=\\boxed{9}\\)</li>
+    </ol>`
+  },
+  {
+    topic: "Integrals",
+    text: "Evaluate \\(\\displaystyle\\int 2x(x^2+1)^4\\,dx\\). (U-Substitution)",
+    choices: ["(x²+1)⁵ + C","(x²+1)⁵/5 + C","2(x²+1)⁵ + C","(x²+1)⁴/4 + C"],
+    answer: 1,
+    solution: `<ol>
+      <li>Let \\(u=x^2+1\\), so \\(du=2x\\,dx\\)</li>
+      <li>Integral becomes: \\(\\displaystyle\\int u^4\\,du=\\dfrac{u^5}{5}+C\\)</li>
+      <li>Back-substitute: \\(\\boxed{\\dfrac{(x^2+1)^5}{5}+C}\\)</li>
+    </ol>`
+  },
+  {
+    topic: "Integrals",
+    text: "Find the area between \\(y=x\\) and \\(y=x^2\\) from \\(x=0\\) to \\(x=1\\).",
+    choices: ["1/6","1/3","1/2","1/4"],
+    answer: 0,
+    solution: `<ol>
+      <li>Top curve minus bottom: \\(\\displaystyle\\int_0^1(x-x^2)\\,dx\\)</li>
+      <li>\\(=\\left[\\dfrac{x^2}{2}-\\dfrac{x^3}{3}\\right]_0^1=\\dfrac{1}{2}-\\dfrac{1}{3}=\\boxed{\\dfrac{1}{6}}\\)</li>
+    </ol>`
+  },
+  {
+    topic: "Integrals",
+    text: "Find the volume when \\(y=x\\) on \\([0,2]\\) is rotated about the \\(x\\)-axis. (Disk Method)",
+    choices: ["4π/3","8π/3","4π","2π"],
+    answer: 1,
+    solution: `<ol>
+      <li>Disk formula: \\(V=\\pi\\displaystyle\\int_0^2[f(x)]^2\\,dx=\\pi\\int_0^2 x^2\\,dx\\)</li>
+      <li>\\(=\\pi\\left[\\dfrac{x^3}{3}\\right]_0^2=\\pi\\cdot\\dfrac{8}{3}=\\boxed{\\dfrac{8\\pi}{3}}\\)</li>
+    </ol>`
+  },
+
+  // ── Differential Equations ──
+  {
+    topic: "Differential Equations",
+    text: "Solve \\(\\dfrac{dy}{dx}=3x^2\\) given \\(y(1)=5\\).",
+    choices: ["y = x³ + 4","y = 3x³ + 2","y = x³ + 5","y = 3x² + 2"],
+    answer: 0,
+    solution: `<ol>
+      <li>Integrate: \\(y=\\displaystyle\\int 3x^2\\,dx=x^3+C\\)</li>
+      <li>Apply \\(y(1)=5\\): \\(1+C=5\\Rightarrow C=4\\)</li>
+      <li><strong>\\(y=x^3+4\\)</strong></li>
+    </ol>`
+  },
+
+  // ── Sequences & Series ──
+  {
+    topic: "Sequences & Series",
+    text: "Does \\(1+\\tfrac{1}{2}+\\tfrac{1}{4}+\\tfrac{1}{8}+\\cdots\\) converge? If so, find the sum.",
+    choices: ["Diverges","Converges to 1","Converges to 2","Converges to 3"],
+    answer: 2,
+    solution: `<p>Geometric series with first term \\(a=1\\) and ratio \\(r=\\tfrac{1}{2}\\).<br>
+    Since \\(|r|<1\\), it converges. Sum: \\(S=\\dfrac{a}{1-r}=\\dfrac{1}{1-\\frac{1}{2}}=\\boxed{2}\\)</p>`
+  },
+  {
+    topic: "Sequences & Series",
+    text: "Write the first four nonzero terms of the Maclaurin series for \\(e^x\\).",
+    choices: [
+      "1 + x + x²/2! + x³/3!",
+      "x + x³/3! + x⁵/5! + x⁷/7!",
+      "1 − x + x²/2! − x³/3!",
+      "1 + x + x² + x³"
+    ],
+    answer: 0,
+    solution: `<p>The Maclaurin series is \\(e^x=\\displaystyle\\sum_{n=0}^{\\infty}\\dfrac{x^n}{n!}\\).<br>
+    First four terms: \\(\\boxed{1+x+\\dfrac{x^2}{2!}+\\dfrac{x^3}{3!}}\\)</p>`
+  },
+  {
+    topic: "Sequences & Series",
+    text: "Use the Ratio Test on \\(\\displaystyle\\sum_{n=1}^{\\infty}\\frac{n!}{5^n}\\). Does it converge or diverge?",
+    choices: ["Converges","Diverges","Inconclusive","Converges conditionally"],
+    answer: 1,
+    solution: `<ol>
+      <li>\\(L=\\displaystyle\\lim_{n\\to\\infty}\\left|\\dfrac{a_{n+1}}{a_n}\\right|=\\lim_{n\\to\\infty}\\dfrac{(n+1)!}{5^{n+1}}\\cdot\\dfrac{5^n}{n!}\\)</li>
+      <li>\\(=\\displaystyle\\lim_{n\\to\\infty}\\dfrac{n+1}{5}=\\infty>1\\)</li>
+      <li>Since \\(L>1\\), the series <strong>diverges</strong>.</li>
+    </ol>`
+  },
+
+  // ── Parametric & Polar ──
+  {
+    topic: "Parametric & Polar",
+    text: "Given \\(x=t^2\\) and \\(y=t^3\\), find \\(\\dfrac{dy}{dx}\\).",
+    choices: ["3t/2","2t/3","3t²/2","t/2"],
+    answer: 0,
+    solution: `<ol>
+      <li>\\(\\dfrac{dy}{dt}=3t^2\\), \\(\\dfrac{dx}{dt}=2t\\)</li>
+      <li>\\(\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}=\\dfrac{3t^2}{2t}=\\boxed{\\dfrac{3t}{2}}\\)</li>
+    </ol>`
+  },
+  {
+    topic: "Parametric & Polar",
+    text: "Find the area inside \\(r=2\\) from \\(\\theta=0\\) to \\(\\theta=\\pi\\).",
+    choices: ["2π","4π","π","8π"],
+    answer: 0,
+    solution: `<ol>
+      <li>Polar area: \\(A=\\dfrac{1}{2}\\displaystyle\\int_0^{\\pi} r^2\\,d\\theta=\\dfrac{1}{2}\\int_0^{\\pi}4\\,d\\theta\\)</li>
+      <li>\\(=\\dfrac{1}{2}\\cdot 4\\pi=\\boxed{2\\pi}\\)</li>
+    </ol>`
+  }
+];
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let wrongTopics = {};
+let answered = false;
+let timerInterval = null;
+let timeLeft = 30;
+let streakCount = 0;
+let currentTopic = "";
+
+// ─────────────────────────────────────────────
+//  TOPIC MAP
+// ─────────────────────────────────────────────
+const TOPICS = [
+  "Limits & Continuity",
+  "Derivatives",
+  "Applications of Derivatives",
+  "Integrals",
+  "Differential Equations",
+  "Sequences & Series",
+  "Parametric & Polar"
+];
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+function renderMath() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left:"\\(", right:"\\)", display:false},
+      {left:"\\[", right:"\\]", display:true},
+    ]
+  });
+}
+
+function buildTopicGrid() {
+  const grid = document.getElementById("topicGrid");
+  grid.innerHTML = "";
+
+  TOPICS.forEach(t => {
+    const count = QUESTIONS.filter(q => q.topic === t).length;
+    const btn = document.createElement("button");
+    btn.className = "topic-btn";
+    btn.innerHTML = `<div class="t-name">${t}</div><div class="t-count">${count} question${count!==1?"s":""}</div>`;
+    btn.onclick = () => startGame(t);
+    grid.appendChild(btn);
+  });
+
+  const mix = document.createElement("button");
+  mix.className = "topic-btn mixed";
+  mix.innerHTML = `<div class="t-name">Mixed Review</div><div class="t-count">All ${QUESTIONS.length} questions</div>`;
+  mix.onclick = () => startGame("Mixed Review");
+  grid.appendChild(mix);
+}
+
+// ─────────────────────────────────────────────
+//  NAVIGATION
+// ─────────────────────────────────────────────
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  // Re-render math after screen switch
+  setTimeout(renderMath, 50);
+}
+
+function showTopics(startMixed = false) {
+  if (startMixed) { startGame("Mixed Review"); return; }
+  buildTopicGrid();
+  show("topics");
+}
+
+// ─────────────────────────────────────────────
+//  GAME LOGIC
+// ─────────────────────────────────────────────
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startGame(topic) {
+  currentTopic = topic;
+  const pool = topic === "Mixed Review"
+    ? [...QUESTIONS]
+    : QUESTIONS.filter(q => q.topic === topic);
+  currentQuestions = shuffle([...pool]);
+  currentIndex = 0;
+  score = 0;
+  wrongTopics = {};
+  streakCount = 0;
+  show("question");
+  loadQuestion();
+}
+
+function loadQuestion() {
+  answered = false;
+  clearInterval(timerInterval);
+  timeLeft = 30;
+
+  const q = currentQuestions[currentIndex];
+  const total = currentQuestions.length;
+
+  document.getElementById("qProgress").textContent = `Question ${currentIndex+1} of ${total}`;
+  document.getElementById("progressFill").style.width = `${(currentIndex/total)*100}%`;
+  document.getElementById("qTopicLabel").textContent = q.topic;
+  document.getElementById("qText").innerHTML = q.text;
+  document.getElementById("resultFlash").className = "result-flash";
+  document.getElementById("solutionBox").className = "solution-box";
+  document.getElementById("nextBtn").style.display = "none";
+
+  const streak = document.getElementById("streakBadge");
+  if (streakCount >= 2) {
+    streak.style.display = "inline";
+    streak.textContent = `🔥 ${streakCount}`;
+  } else {
+    streak.style.display = "none";
+  }
+
+  // Build choices
+  const container = document.getElementById("choicesContainer");
+  container.innerHTML = "";
+  const letters = ["A","B","C","D"];
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement("button");
+    btn.className = "choice-btn";
+    btn.innerHTML = `<span class="letter">${letters[i]}</span><span>${c}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    container.appendChild(btn);
+  });
+
+  // Timer
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      if (!answered) timeUp();
+    }
+  }, 1000);
+
+  setTimeout(renderMath, 50);
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById("timer");
+  el.textContent = `0:${timeLeft.toString().padStart(2,"0")}`;
+  el.className = timeLeft <= 8 ? "timer warning" : "timer";
+}
+
+function timeUp() {
+  answered = true;
+  streakCount = 0;
+  const q = currentQuestions[currentIndex];
+  wrongTopics[q.topic] = (wrongTopics[q.topic] || 0) + 1;
+
+  const buttons = document.querySelectorAll(".choice-btn");
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add("correct");
+  });
+
+  showFlash("Time's up! ⏰", false);
+  revealSolution();
+  document.getElementById("nextBtn").style.display = "block";
+}
+
+function selectAnswer(index) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timerInterval);
+
+  const q = currentQuestions[currentIndex];
+  const correct = index === q.answer;
+
+  if (correct) { score++; streakCount++; }
+  else {
+    streakCount = 0;
+    wrongTopics[q.topic] = (wrongTopics[q.topic] || 0) + 1;
+  }
+
+  const buttons = document.querySelectorAll(".choice-btn");
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add("correct");
+    else if (i === index && !correct) btn.classList.add("wrong");
+  });
+
+  showFlash(correct ? "Correct! ✓" : "Incorrect", correct);
+  revealSolution();
+  document.getElementById("nextBtn").style.display = "block";
+
+  if (streakCount >= 2) {
+    document.getElementById("streakBadge").style.display = "inline";
+    document.getElementById("streakBadge").textContent = `🔥 ${streakCount}`;
+  }
+}
+
+function showFlash(msg, isCorrect) {
+  const el = document.getElementById("resultFlash");
+  el.textContent = msg;
+  el.className = `result-flash show ${isCorrect ? "correct" : "wrong"}`;
+}
+
+function revealSolution() {
+  const q = currentQuestions[currentIndex];
+  document.getElementById("solutionContent").innerHTML = q.solution;
+  document.getElementById("solutionBox").className = "solution-box show";
+  setTimeout(renderMath, 50);
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= currentQuestions.length) {
+    showScore();
+  } else {
+    loadQuestion();
+  }
+}
+
+function quitGame() {
+  clearInterval(timerInterval);
+  show("home");
+}
+
+// ─────────────────────────────────────────────
+//  SCORE SCREEN
+// ─────────────────────────────────────────────
+function showScore() {
+  const total = currentQuestions.length;
+  const pct = Math.round((score / total) * 100);
+
+  document.getElementById("scoreNum").textContent = score;
+  document.getElementById("scoreDen").textContent = `/ ${total}`;
+
+  // Ring animation
+  const circ = 2 * Math.PI * 56;
+  const fill = document.getElementById("ringFill");
+  setTimeout(() => {
+    fill.style.strokeDashoffset = circ - (circ * pct / 100);
+    if (pct >= 80) fill.style.stroke = "var(--correct)";
+    else if (pct >= 50) fill.style.stroke = "var(--accent)";
+    else fill.style.stroke = "var(--wrong)";
+  }, 100);
+
+  // Save best score
+  const key = `best_${currentTopic}`;
+  const prev = localStorage.getItem(key);
+  if (!prev || score > parseInt(prev)) localStorage.setItem(key, score);
+  const overall = localStorage.getItem("best_overall");
+  if (!overall || pct > parseInt(overall)) localStorage.setItem("best_overall", pct);
+  updateHomeStats();
+
+  // Breakdown
+  const bd = document.getElementById("scoreBreakdown");
+  bd.innerHTML = `
+    <div class="breakdown-row">
+      <span class="tag">Correct</span>
+      <span class="val good">${score}</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="tag">Incorrect</span>
+      <span class="val bad">${total - score}</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="tag">Accuracy</span>
+      <span class="val ${pct>=70?"good":"bad"}">${pct}%</span>
+    </div>`;
+
+  // Suggestion
+  const weak = Object.entries(wrongTopics).sort((a,b) => b[1]-a[1]);
+  const sb = document.getElementById("suggestionBox");
+  if (weak.length === 0) {
+    sb.innerHTML = `<h3>Suggestion</h3><p>Perfect or near-perfect — great work! Try a timed Mixed Review next.</p>`;
+  } else {
+    sb.innerHTML = `<h3>Suggestion</h3><p>Review <strong>${weak[0][0]}</strong> — you missed ${weak[0][1]} question${weak[0][1]>1?"s":""} there. Practice that topic before moving on.</p>`;
+  }
+
+  show("score");
+}
+
+function updateHomeStats() {
+  const best = localStorage.getItem("best_overall");
+  if (best) {
+    document.getElementById("bestScore").innerHTML = `Best Score: <strong>${best}%</strong>`;
+  }
+}
+
+function replayTopic() {
+  startGame(currentTopic);
+}
+
+// ─────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────
+updateHomeStats();
+</script>
+</body>
+</html>
