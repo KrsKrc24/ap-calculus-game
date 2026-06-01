@@ -279,11 +279,11 @@
       </div>
       <div class="puleg">
         <div class="puleg-t">Power-Ups</div>
-        <div class="purow"><div class="pudm" style="background:#22d3ee"></div><span style="color:#22d3ee;font-weight:700">PARTNER QUIZ</span>&nbsp;&mdash;&nbsp;Free correct answer</div>
-        <div class="purow"><div class="pudm" style="background:#4ade80"></div><span style="color:#4ade80;font-weight:700">QUIZ DROP</span>&nbsp;&mdash;&nbsp;Shield from next wrong answer</div>
-        <div class="purow"><div class="pudm" style="background:#e879f9"></div><span style="color:#e879f9;font-weight:700">GRADE CURVE</span>&nbsp;&mdash;&nbsp;+200 bonus points</div>
-        <div class="purow"><div class="pudm" style="background:#fb923c"></div><span style="color:#fb923c;font-weight:700">FLEXTIME</span>&nbsp;&mdash;&nbsp;Speed slows for 8 seconds</div>
-        <div class="purow"><div class="pudm" style="background:#fde68a"></div><span style="color:#fde68a;font-weight:700">EXTRA CREDIT</span>&nbsp;&mdash;&nbsp;Grow by 2 on next correct answer</div>
+        <div class="purow"><div class="pudm" style="background:#22d3ee"></div><span style="color:#22d3ee;font-weight:700">PARTNER QUIZ</span>:Free correct answer</div>
+        <div class="purow"><div class="pudm" style="background:#4ade80"></div><span style="color:#4ade80;font-weight:700">QUIZ DROP</span>:Shield from next wrong answer</div>
+        <div class="purow"><div class="pudm" style="background:#e879f9"></div><span style="color:#e879f9;font-weight:700">GRADE CURVE</span>:+200 bonus points</div>
+        <div class="purow"><div class="pudm" style="background:#fb923c"></div><span style="color:#fb923c;font-weight:700">FLEXTIME</span>:Speed slows for 8 seconds</div>
+        <div class="purow"><div class="pudm" style="background:#fde68a"></div><span style="color:#fde68a;font-weight:700">EXTRA CREDIT</span>:Grow by 2 on next correct answer</div>
       </div>
       <div id="homeHS" style="font-size:.85rem;font-weight:500;color:var(--muted)"></div>
       <button class="btn btn-p" onclick="startGame()">Play Now</button>
@@ -338,7 +338,7 @@ const QS=[
    ch:["2","4","0","DNE"],ans:1,
    sol:"<ol><li>Factor: \\((x-2)(x+2)\\)</li><li>Cancel, plug in \\(x=2\\): \\(\\boxed{4}\\)</li></ol>"},
   {topic:"L'Hopital",text:"Find \\(\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}\\)",
-   ch:["0","infinity","1","DNE"],ans:2,
+   ch:["0","∞","1","DNE"],ans:2,
    sol:"<p>0/0 form. L'Hopital: \\(\\frac{\\cos x}{1}\\to\\cos0=\\boxed{1}\\)</p>"},
   {topic:"Continuity",text:"Is \\(f(x)=\\frac{x^2-9}{x-3}\\) continuous at \\(x=3\\)?",
    ch:["Yes, f(3)=6","No, removable discontinuity","Yes, f(3)=0","No, jump discontinuity"],ans:1,
@@ -347,14 +347,14 @@ const QS=[
    ch:["12x^2-10x+7","12x^2-5x+7","4x^2-10x+7","12x^3-10x^2+7x"],ans:0,
    sol:"<p>Power rule: \\(f'(x)=12x^2-10x+7\\)</p>"},
   {topic:"Chain Rule",text:"Find \\(f'(x)\\) for \\(f(x)=\\sin(x^2)\\)",
-   ch:["cos(x^2)","2x\\,cos(x^2)","2x\\,sin(x^2)","x\\,cos(x^2)"],ans:1,
-   sol:"<p>Chain rule: \\(\\cos(x^2)\\cdot2x=\\boxed{2x\\cos(x^2)}\\)</p>"},
+   ch:["\\(\\cos(x^2)\\)","\\(2x\\cos(x^2)\\)","\\(2x\\sin(x^2)\\)","\\(x\\cos(x^2)\\)"],ans:1,
+   sol:"<p>Chain rule: outer \\(\\sin(u)\\), inner \\(u=x^2\\).<br>\\(f'(x)=\\cos(x^2)\\cdot\\frac{d}{dx}[x^2]=\\boxed{2x\\cos(x^2)}\\)</p>"},
   {topic:"Product Rule",text:"Find \\(f'(x)\\) for \\(f(x)=x^2e^x\\)",
    ch:["2xe^x","x^2e^x","e^x(2x+x^2)","e^x(x^2-2x)"],ans:2,
    sol:"<p>\\((uv)'=u'v+uv'\\Rightarrow 2xe^x+x^2e^x=\\boxed{e^x(2x+x^2)}\\)</p>"},
   {topic:"Quotient Rule",text:"Find \\(f'(x)\\) for \\(f(x)=\\dfrac{x^2+1}{x-3}\\)",
-   ch:["\\frac{2x(x-3)-(x^2+1)}{(x-3)^2}","2x","\\frac{x^2+6x-1}{(x-3)^2}","\\frac{2x(x-3)+(x^2+1)}{(x-3)^2}"],ans:0,
-   sol:"<p>\\(\\frac{2x(x-3)-(x^2+1)}{(x-3)^2}=\\frac{x^2-6x-1}{(x-3)^2}\\)</p>"},
+   ch:["\\(\\dfrac{x^2-6x-1}{(x-3)^2}\\)","\\(\\dfrac{2x}{x-3}\\)","\\(\\dfrac{x^2+6x+1}{(x-3)^2}\\)","\\(\\dfrac{2x(x-3)+(x^2+1)}{(x-3)^2}\\)"],ans:0,
+   sol:"<p>Quotient rule: \\(\\frac{u'v-uv'}{v^2}\\) where \\(u=x^2+1,\\,v=x-3\\).<br>Numerator: \\(2x(x-3)-(x^2+1)=2x^2-6x-x^2-1=\\boxed{x^2-6x-1}\\).<br>Answer: \\(\\dfrac{x^2-6x-1}{(x-3)^2}\\)</p>"},
   {topic:"Implicit Diff",text:"Given \\(x^2+y^2=25\\), find \\(\\dfrac{dy}{dx}\\)",
    ch:["x/y","-x/y","y/x","-y/x"],ans:1,
    sol:"<p>\\(2x+2y\\frac{dy}{dx}=0\\Rightarrow\\frac{dy}{dx}=\\boxed{-\\frac{x}{y}}\\)</p>"},
@@ -365,22 +365,22 @@ const QS=[
    ch:["x=0,3","x=1,3","x=-1,3","x=2,4"],ans:1,
    sol:"<p>\\(f'=3(x-1)(x-3)=0\\Rightarrow x=1,\\,x=3\\)</p>"},
   {topic:"Optimization",text:"Rectangle with perimeter 40. Dimensions for max area?",
-   ch:["5\\times15","10\\times10","8\\times12","4\\times16"],ans:1,
+   ch:["5 × 15","10 × 10","8 × 12","4 × 16"],ans:1,
    sol:"<p>\\(A=x(20-x),\\;A'=20-2x=0\\Rightarrow x=10\\). Square \\(\\boxed{10\\times10}\\)</p>"},
   {topic:"Related Rates",text:"Circle radius grows 3 cm/s. Rate of area change at \\(r=5\\)?",
-   ch:["15\\pi","30\\pi","25\\pi","10\\pi"],ans:1,
+   ch:["15π cm²/s","30π cm²/s","25π cm²/s","10π cm²/s"],ans:1,
    sol:"<p>\\(\\frac{dA}{dt}=2\\pi r\\frac{dr}{dt}=2\\pi(5)(3)=\\boxed{30\\pi}\\) cm\\(^2\\)/s</p>"},
   {topic:"Definite Integral",text:"Evaluate \\(\\displaystyle\\int_0^3 x^2\\,dx\\)",
    ch:["9","27","3","6"],ans:0,
    sol:"<p>\\(\\left[\\frac{x^3}{3}\\right]_0^3=\\frac{27}{3}=\\boxed{9}\\)</p>"},
   {topic:"U-Substitution",text:"Evaluate \\(\\displaystyle\\int 2x(x^2+1)^4\\,dx\\)",
-   ch:["(x^2+1)^5+C","\\frac{(x^2+1)^5}{5}+C","2(x^2+1)^5+C","\\frac{(x^2+1)^4}{4}+C"],ans:1,
+   ch:["\\((x^2+1)^5+C\\)","\\(\\dfrac{(x^2+1)^5}{5}+C\\)","\\(2(x^2+1)^5+C\\)","\\(\\dfrac{(x^2+1)^4}{4}+C\\)"],ans:1,
    sol:"<p>Let \\(u=x^2+1\\), \\(du=2x\\,dx\\): \\(\\int u^4du=\\boxed{\\frac{(x^2+1)^5}{5}+C}\\)</p>"},
   {topic:"Area / Curves",text:"Area between \\(y=x\\) and \\(y=x^2\\), \\(0\\le x\\le1\\)",
    ch:["1/6","1/3","1/2","1/4"],ans:0,
    sol:"<p>\\(\\int_0^1(x-x^2)\\,dx=\\tfrac12-\\tfrac13=\\boxed{\\tfrac16}\\)</p>"},
   {topic:"Disk Method",text:"Volume rotating \\(y=x\\) on \\([0,2]\\) about the x-axis",
-   ch:["4\\pi/3","8\\pi/3","4\\pi","2\\pi"],ans:1,
+   ch:["4π/3","8π/3","4π","2π"],ans:1,
    sol:"<p>\\(\\pi\\int_0^2x^2\\,dx=\\pi\\cdot\\tfrac83=\\boxed{\\tfrac{8\\pi}{3}}\\)</p>"},
   {topic:"Diff Eq",text:"Solve \\(\\dfrac{dy}{dx}=3x^2\\) with \\(y(1)=5\\)",
    ch:["y=x^3+4","y=3x^3+2","y=x^3+5","y=3x^2+2"],ans:0,
@@ -389,7 +389,7 @@ const QS=[
    ch:["Diverges","Converges, sum = 1","Converges, sum = 2","Converges, sum = 3"],ans:2,
    sol:"<p>Geometric, \\(|r|=\\tfrac12<1\\). \\(S=\\frac{1}{1-1/2}=\\boxed{2}\\)</p>"},
   {topic:"Maclaurin",text:"First four terms of Maclaurin series for \\(e^x\\)?",
-   ch:["1+x+\\frac{x^2}{2!}+\\frac{x^3}{3!}","x+\\frac{x^3}{3!}+\\frac{x^5}{5!}+\\cdots","1-x+\\frac{x^2}{2!}-\\frac{x^3}{3!}","1+x+x^2+x^3"],ans:0,
+   ch:["\\(1+x+\\frac{x^2}{2!}+\\frac{x^3}{3!}\\)","\\(x+\\frac{x^3}{3!}+\\frac{x^5}{5!}+\\cdots\\)","\\(1-x+\\frac{x^2}{2!}-\\frac{x^3}{3!}\\)","\\(1+x+x^2+x^3\\)"],ans:0,
    sol:"<p>\\(e^x=\\textstyle\\sum\\frac{x^n}{n!}\\): \\(\\boxed{1+x+\\frac{x^2}{2}+\\frac{x^3}{6}}\\)</p>"},
   {topic:"Ratio Test",text:"Does \\(\\displaystyle\\sum_{n=1}^{\\infty}\\frac{n!}{5^n}\\) converge?",
    ch:["Converges","Diverges","Inconclusive","Conditionally converges"],ans:1,
@@ -398,7 +398,7 @@ const QS=[
    ch:["3t/2","2t/3","3t^2/2","t/2"],ans:0,
    sol:"<p>\\(\\frac{dy/dt}{dx/dt}=\\frac{3t^2}{2t}=\\boxed{\\frac{3t}{2}}\\)</p>"},
   {topic:"Polar Area",text:"Area inside \\(r=2\\) from \\(\\theta=0\\) to \\(\\theta=\\pi\\)",
-   ch:["2\\pi","4\\pi","\\pi","8\\pi"],ans:0,
+   ch:["2π","4π","π","8π"],ans:0,
    sol:"<p>\\(A=\\tfrac12\\int_0^\\pi4\\,d\\theta=\\tfrac12\\cdot4\\pi=\\boxed{2\\pi}\\)</p>"}
 ];
 
