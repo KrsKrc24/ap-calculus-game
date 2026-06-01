@@ -9,11 +9,11 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
     onload="renderAllMath()"></script>
   <style>
-    :root {
-      --bg:#090a12; --surface:#11131e; --card:#181a28;
-      --accent:#7c6af7; --accent2:#a78bfa;
-      --gold:#fbbf24; --correct:#34d399; --wrong:#f87171;
-      --text:#e2e2ef; --muted:#6b7280; --border:#252840;
+    :root{
+      --bg:#090a12;--surface:#11131e;--card:#181a28;
+      --accent:#7c6af7;--accent2:#a78bfa;
+      --gold:#fbbf24;--correct:#34d399;--wrong:#f87171;
+      --text:#e2e2ef;--muted:#6b7280;--border:#252840;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
     body{
@@ -29,27 +29,26 @@
       justify-content:space-between;align-items:center;
       padding:10px 18px;
       background:linear-gradient(135deg,#181a2e,#1c1e34);
-      border:1px solid rgba(124,106,247,.28);border-radius:12px;
+      border:1px solid rgba(124,106,247,.3);border-radius:12px;
       font-size:.82rem;flex-wrap:wrap;gap:8px;
-      box-shadow:0 0 24px rgba(124,106,247,.08);
+      box-shadow:0 0 24px rgba(124,106,247,.1);
     }
     #hud .logo{font-weight:900;font-size:1.5rem;color:var(--accent2);
       text-shadow:0 0 14px rgba(167,139,250,.65);}
     .hud-item{display:flex;flex-direction:column;align-items:center;gap:1px;}
     .hud-lbl{font-size:.58rem;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);}
     .hud-val{font-size:.95rem;font-weight:700;color:var(--accent2);}
-    #hScore{transition:color .2s;}
     #hScore.pop{animation:scorePop .35s ease;}
     @keyframes scorePop{0%{transform:scale(1)}50%{transform:scale(1.45);color:var(--correct)}100%{transform:scale(1)}}
 
     /* GAME WRAPPER */
     #gw{
       position:relative;width:560px;height:560px;
-      border:1px solid rgba(124,106,247,.35);border-radius:14px;
+      border:1px solid rgba(124,106,247,.38);border-radius:14px;
       overflow:hidden;flex-shrink:0;
-      box-shadow:0 0 0 1px rgba(124,106,247,.1),
-                 0 0 40px rgba(124,106,247,.13),
-                 0 0 90px rgba(124,106,247,.05);
+      box-shadow:0 0 0 1px rgba(124,106,247,.12),
+                 0 0 45px rgba(124,106,247,.15),
+                 0 0 90px rgba(124,106,247,.06);
     }
     @media(max-width:600px){#gw{width:calc(100vw - 24px);height:calc(100vw - 24px);}}
     canvas{display:block;width:100%;height:100%;}
@@ -57,14 +56,14 @@
     /* OVERLAY */
     #ov{
       position:absolute;inset:0;
-      background:rgba(7,8,16,.87);
+      background:rgba(7,8,16,.86);
       backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
       display:none;flex-direction:column;
       align-items:center;justify-content:center;
       padding:20px;gap:14px;overflow-y:auto;
     }
     #ov.on{display:flex;}
-    .scr{display:none;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:480px;}
+    .scr{display:none;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:490px;}
     .scr.on{display:flex;animation:fadeUp .22s ease;}
     @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
@@ -78,8 +77,7 @@
     .gsub{font-size:.88rem;color:var(--muted);text-align:center;max-width:340px;line-height:1.65;}
     .inst{
       background:rgba(18,20,36,.85);border:1px solid var(--border);border-radius:12px;
-      padding:14px 18px;font-size:.82rem;color:var(--muted);line-height:2.1;
-      width:100%;
+      padding:14px 18px;font-size:.82rem;color:var(--muted);line-height:2.1;width:100%;
     }
     .irow{display:flex;align-items:center;gap:9px;}
     .idot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
@@ -87,6 +85,18 @@
       border-radius:5px;padding:1px 7px;font-family:monospace;color:var(--text);font-size:.76rem;}
     .blink{font-size:.72rem;color:var(--muted);letter-spacing:1px;animation:blink 1.5s ease infinite;}
     @keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+
+    /* POWERUP LEGEND */
+    .pu-legend{
+      background:rgba(18,20,36,.85);border:1px solid var(--border);border-radius:12px;
+      padding:12px 16px;font-size:.78rem;color:var(--muted);width:100%;
+    }
+    .pu-legend-title{
+      font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent2);margin-bottom:8px;
+    }
+    .pu-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+    .pu-dot{width:10px;height:10px;transform:rotate(45deg);flex-shrink:0;}
 
     /* BUTTONS */
     .btn{padding:12px 30px;border-radius:40px;border:none;cursor:pointer;
@@ -184,6 +194,7 @@
   <canvas id="game" width="560" height="560"></canvas>
   <div id="ov" class="on">
 
+    <!-- HOME -->
     <div id="homeScr" class="scr on">
       <div class="gtitle">INTEGRAL</div>
       <div class="gsub">Navigate the coordinate plane. Collect problem nodes. Answer correctly to grow, wrong to shrink.</div>
@@ -191,13 +202,22 @@
         <div class="irow"><div class="idot" style="background:#a78bfa"></div><span><span class="kbd">Arrow Keys</span> or <span class="kbd">WASD</span> to steer</span></div>
         <div class="irow"><div class="idot" style="background:#34d399"></div><span>Correct answer: +100 pts, grow by 1</span></div>
         <div class="irow"><div class="idot" style="background:#f87171"></div><span>Wrong answer: shrink by 1</span></div>
-        <div class="irow"><div class="idot" style="background:#fbbf24"></div><span>Speed tier up every 5 correct answers</span></div>
+        <div class="irow"><div class="idot" style="background:#fbbf24"></div><span>Speed increases every 5 correct answers</span></div>
+      </div>
+      <div class="pu-legend">
+        <div class="pu-legend-title">Power-Ups</div>
+        <div class="pu-row"><div class="pu-dot" style="background:#22d3ee"></div><span style="color:#22d3ee;font-weight:700">PARTNER QUIZ</span>&nbsp;Free correct answer + grow</div>
+        <div class="pu-row"><div class="pu-dot" style="background:#4ade80"></div><span style="color:#4ade80;font-weight:700">QUIZ DROP</span>&nbsp;Shield from next wrong answer</div>
+        <div class="pu-row"><div class="pu-dot" style="background:#e879f9"></div><span style="color:#e879f9;font-weight:700">GRADE CURVE</span>&nbsp;+200 bonus points</div>
+        <div class="pu-row"><div class="pu-dot" style="background:#fb923c"></div><span style="color:#fb923c;font-weight:700">STUDY HALL</span>&nbsp;Speed slows for 8 seconds</div>
+        <div class="pu-row"><div class="pu-dot" style="background:#fde68a"></div><span style="color:#fde68a;font-weight:700">EXTRA CREDIT</span>&nbsp;Grow by 2 on next correct answer</div>
       </div>
       <div id="homeHS" style="font-size:.82rem;color:var(--muted)"></div>
       <button class="btn btn-p" onclick="startGame()">Play Now</button>
       <div class="blink">SPACE to start</div>
     </div>
 
+    <!-- QUESTION -->
     <div id="qScr" class="scr">
       <div id="qp">
         <div class="qtopic" id="qTop"></div>
@@ -209,6 +229,7 @@
       </div>
     </div>
 
+    <!-- GAME OVER -->
     <div id="goScr" class="scr">
       <div class="golbl">Game Over</div>
       <div class="goscore" id="goScore">0</div>
@@ -242,91 +263,112 @@ const QS=[
   {topic:"Limits",text:"Find \\(\\displaystyle\\lim_{x\\to2}\\frac{x^2-4}{x-2}\\)",
    ch:["2","4","0","DNE"],ans:1,
    sol:"<ol><li>Factor: \\((x-2)(x+2)\\)</li><li>Cancel, plug in \\(x=2\\): \\(\\boxed{4}\\)</li></ol>"},
-
   {topic:"L'Hopital",text:"Find \\(\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}\\)",
    ch:["0","infinity","1","DNE"],ans:2,
    sol:"<p>0/0 form. L'Hopital: \\(\\frac{\\cos x}{1}\\to\\cos0=\\boxed{1}\\)</p>"},
-
   {topic:"Continuity",text:"Is \\(f(x)=\\frac{x^2-9}{x-3}\\) continuous at \\(x=3\\)?",
    ch:["Yes, f(3)=6","No, removable discontinuity","Yes, f(3)=0","No, jump discontinuity"],ans:1,
    sol:"<p>\\(f(3)\\) undefined (hole). Removable discontinuity at \\(x=3\\).</p>"},
-
   {topic:"Power Rule",text:"Find \\(f'(x)\\) for \\(f(x)=4x^3-5x^2+7x-9\\)",
-   ch:["12x² - 10x + 7","12x² - 5x + 7","4x² - 10x + 7","12x³ - 10x² + 7x"],ans:0,
+   ch:["12x^2 - 10x + 7","12x^2 - 5x + 7","4x^2 - 10x + 7","12x^3 - 10x^2 + 7x"],ans:0,
    sol:"<p>Power rule term by term: \\(f'(x)=12x^2-10x+7\\)</p>"},
-
   {topic:"Chain Rule",text:"Find \\(f'(x)\\) for \\(f(x)=\\sin(x^2)\\)",
-   ch:["cos(x²)","2x cos(x²)","2x sin(x²)","x cos(x²)"],ans:1,
+   ch:["cos(x^2)","2x cos(x^2)","2x sin(x^2)","x cos(x^2)"],ans:1,
    sol:"<p>\\(\\cos(x^2)\\cdot2x=\\boxed{2x\\cos(x^2)}\\)</p>"},
-
   {topic:"Product Rule",text:"Find \\(f'(x)\\) for \\(f(x)=x^2 e^x\\)",
-   ch:["2x eˣ","x² eˣ","eˣ(2x + x²)","eˣ(x² - 2x)"],ans:2,
+   ch:["2x e^x","x^2 e^x","e^x(2x + x^2)","e^x(x^2 - 2x)"],ans:2,
    sol:"<p>\\((uv)'=u'v+uv'\\): \\(2xe^x+x^2e^x=\\boxed{e^x(2x+x^2)}\\)</p>"},
-
   {topic:"Quotient Rule",text:"Find \\(f'(x)\\) for \\(f(x)=\\dfrac{x^2+1}{x-3}\\)",
-   ch:["(2x(x-3) - (x²+1)) / (x-3)²","2x","(x² + 6x - 1) / (x-3)²","(2x(x-3) + (x²+1)) / (x-3)²"],ans:0,
+   ch:["(2x(x-3) - (x^2+1)) / (x-3)^2","2x","(x^2 + 6x - 1) / (x-3)^2","(2x(x-3) + (x^2+1)) / (x-3)^2"],ans:0,
    sol:"<p>\\(\\frac{2x(x-3)-(x^2+1)}{(x-3)^2}=\\frac{x^2-6x-1}{(x-3)^2}\\)</p>"},
-
   {topic:"Implicit Diff",text:"Given \\(x^2+y^2=25\\), find \\(\\dfrac{dy}{dx}\\)",
    ch:["x/y","-x/y","y/x","-y/x"],ans:1,
    sol:"<p>\\(2x+2y\\frac{dy}{dx}=0\\Rightarrow\\frac{dy}{dx}=\\boxed{-\\frac{x}{y}}\\)</p>"},
-
   {topic:"Tangent Line",text:"Tangent to \\(f(x)=x^2+3x\\) at \\(x=2\\)?",
    ch:["y = 7x - 4","y = 7x + 4","y = 4x - 7","y = 7x - 10"],ans:0,
    sol:"<p>\\(f(2)=10\\), \\(f'(2)=7\\). Point-slope: \\(y=7x-4\\)</p>"},
-
   {topic:"Critical Points",text:"Critical points of \\(f(x)=x^3-6x^2+9x\\)?",
    ch:["x = 0 and 3","x = 1 and 3","x = -1 and 3","x = 2 and 4"],ans:1,
    sol:"<p>\\(f'=3(x-1)(x-3)=0\\Rightarrow x=1,\\,x=3\\)</p>"},
-
   {topic:"Optimization",text:"Rectangle, perimeter 40. Dimensions for max area?",
    ch:["5 x 15","10 x 10","8 x 12","4 x 16"],ans:1,
    sol:"<p>\\(A=x(20-x),\\;A'=20-2x=0\\Rightarrow x=10\\). Square \\(\\boxed{10\\times10}\\)</p>"},
-
   {topic:"Related Rates",text:"Circle radius grows 3 cm/s. Rate of area change at \\(r=5\\)?",
    ch:["15pi","30pi","25pi","10pi"],ans:1,
-   sol:"<p>\\(\\frac{dA}{dt}=2\\pi r\\frac{dr}{dt}=2\\pi(5)(3)=\\boxed{30\\pi}\\) cm²/s</p>"},
-
+   sol:"<p>\\(\\frac{dA}{dt}=2\\pi r\\frac{dr}{dt}=2\\pi(5)(3)=\\boxed{30\\pi}\\) cm^2/s</p>"},
   {topic:"Definite Integral",text:"Evaluate \\(\\displaystyle\\int_0^3 x^2\\,dx\\)",
    ch:["9","27","3","6"],ans:0,
    sol:"<p>\\(\\left[\\frac{x^3}{3}\\right]_0^3=\\frac{27}{3}=\\boxed{9}\\)</p>"},
-
   {topic:"U-Substitution",text:"Evaluate \\(\\displaystyle\\int 2x(x^2+1)^4\\,dx\\)",
-   ch:["(x²+1)⁵ + C","(x²+1)⁵/5 + C","2(x²+1)⁵ + C","(x²+1)⁴/4 + C"],ans:1,
+   ch:["(x^2+1)^5 + C","(x^2+1)^5 / 5 + C","2(x^2+1)^5 + C","(x^2+1)^4 / 4 + C"],ans:1,
    sol:"<p>Let \\(u=x^2+1\\), \\(du=2x\\,dx\\): \\(\\int u^4\\,du=\\boxed{\\frac{(x^2+1)^5}{5}+C}\\)</p>"},
-
   {topic:"Area / Curves",text:"Area between \\(y=x\\) and \\(y=x^2\\), \\(0\\le x\\le1\\)",
    ch:["1/6","1/3","1/2","1/4"],ans:0,
    sol:"<p>\\(\\int_0^1(x-x^2)\\,dx=\\frac{1}{2}-\\frac{1}{3}=\\boxed{\\frac{1}{6}}\\)</p>"},
-
   {topic:"Disk Method",text:"Volume rotating \\(y=x\\) on \\([0,2]\\) about the x-axis",
    ch:["4pi/3","8pi/3","4pi","2pi"],ans:1,
    sol:"<p>\\(\\pi\\int_0^2 x^2\\,dx=\\pi\\cdot\\frac{8}{3}=\\boxed{\\frac{8\\pi}{3}}\\)</p>"},
-
   {topic:"Diff Eq",text:"Solve \\(\\frac{dy}{dx}=3x^2\\) with \\(y(1)=5\\)",
-   ch:["y = x³ + 4","y = 3x³ + 2","y = x³ + 5","y = 3x² + 2"],ans:0,
+   ch:["y = x^3 + 4","y = 3x^3 + 2","y = x^3 + 5","y = 3x^2 + 2"],ans:0,
    sol:"<p>\\(y=x^3+C\\). \\(y(1)=5\\Rightarrow C=4\\). \\(\\boxed{y=x^3+4}\\)</p>"},
-
   {topic:"Geo Series",text:"Does \\(1+\\tfrac12+\\tfrac14+\\cdots\\) converge? Sum?",
    ch:["Diverges","Converges to 1","Converges to 2","Converges to 3"],ans:2,
    sol:"<p>Geometric, \\(|r|=\\frac12<1\\). \\(S=\\frac{1}{1-1/2}=\\boxed{2}\\)</p>"},
-
   {topic:"Maclaurin",text:"First four terms of Maclaurin series for \\(e^x\\)?",
-   ch:["1 + x + x²/2! + x³/3!","x + x³/3! + x⁵/5! ...","1 - x + x²/2! - x³/3!","1 + x + x² + x³"],ans:0,
+   ch:["1 + x + x^2/2! + x^3/3!","x + x^3/3! + x^5/5! ...","1 - x + x^2/2! - x^3/3!","1 + x + x^2 + x^3"],ans:0,
    sol:"<p>\\(e^x=\\sum\\frac{x^n}{n!}\\): \\(\\boxed{1+x+\\frac{x^2}{2}+\\frac{x^3}{6}}\\)</p>"},
-
   {topic:"Ratio Test",text:"Does \\(\\displaystyle\\sum_{n=1}^{\\infty}\\frac{n!}{5^n}\\) converge?",
    ch:["Converges","Diverges","Inconclusive","Conditionally converges"],ans:1,
    sol:"<p>\\(L=\\lim\\frac{n+1}{5}=\\infty>1\\). Diverges.</p>"},
-
   {topic:"Parametric",text:"Given \\(x=t^2,\\,y=t^3\\), find \\(\\frac{dy}{dx}\\)",
-   ch:["3t/2","2t/3","3t²/2","t/2"],ans:0,
+   ch:["3t/2","2t/3","3t^2/2","t/2"],ans:0,
    sol:"<p>\\(\\frac{dy/dt}{dx/dt}=\\frac{3t^2}{2t}=\\boxed{\\frac{3t}{2}}\\)</p>"},
-
   {topic:"Polar Area",text:"Area inside \\(r=2\\) from \\(\\theta=0\\) to \\(\\theta=\\pi\\)",
    ch:["2pi","4pi","pi","8pi"],ans:0,
    sol:"<p>\\(A=\\frac12\\int_0^\\pi 4\\,d\\theta=\\frac12\\cdot4\\pi=\\boxed{2\\pi}\\)</p>"}
 ];
+
+// ── PHRASES ──────────────────────────────────────────────────
+const PH={
+  right:[
+    "You got this!","Ms. Crain would be proud!","Ms. Hartel approves!",
+    "AP ready!","That's the move fr","No cap W answer","Built different",
+    "Calc hits different","Let's go!","Clean work!","Locked in!",
+    "Scholar behavior!","Ms. Crain said bet!","Ms. Hartel said that's it!",
+    "Straight A vibes","You ate that","Not even close","Calculus king!",
+    "Certified AP student","That's real Calculus","W rizz on that one",
+    "Ms. Crain clapping rn","Ms. Hartel took notes","Too easy",
+    "AP exam scared of you","Goated fr","Nobody stopping you",
+  ],
+  wrong:[
+    "Ms. Crain believes in you!","Ms. Hartel says keep going!",
+    "Shake it off!","Next one's yours","Study mode: on",
+    "Review that one later","You still got this!","One wrong ain't the end",
+    "Ms. Crain said bounce back","Ms. Hartel believes in you",
+  ],
+  streak:[
+    "ON FIRE!!","Ms. Crain is watching!","STREAK KING!",
+    "Unstoppable!","Ms. Hartel shook rn","Calc god behavior",
+    "TOO LOCKED IN","Nobody can stop you","Ms. Crain speechless",
+    "GOATED","AP exam is cooked","Ms. Hartel going crazy",
+  ],
+};
+function rndPh(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+// ── POWER-UP TYPES ───────────────────────────────────────────
+const PU=[
+  {id:"partner",label:"PARTNER QUIZ", sym:"PQ",col:"#22d3ee",rgb:"34,211,238",
+   msg:"FREE CORRECT ANSWER!",effect:"free"},
+  {id:"drop",   label:"QUIZ DROP",    sym:"QD",col:"#4ade80",rgb:"74,222,128",
+   msg:"SHIELDED!",effect:"shield"},
+  {id:"curve",  label:"GRADE CURVE",  sym:"+C",col:"#e879f9",rgb:"232,121,249",
+   msg:"+200 BONUS!",effect:"bonus"},
+  {id:"hall",   label:"STUDY HALL",   sym:"SH",col:"#fb923c",rgb:"251,146,60",
+   msg:"SPEED REDUCED!",effect:"slow"},
+  {id:"extra",  label:"EXTRA CREDIT", sym:"EC",col:"#fde68a",rgb:"253,230,138",
+   msg:"EXTRA CREDIT ACTIVE!",effect:"double"},
+];
+function puType(id){return PU.find(p=>p.id===id);}
 
 // ── TOPIC COLORS ─────────────────────────────────────────────
 const TC={
@@ -339,17 +381,11 @@ const TC={
   "Maclaurin":"#60a5fa","Ratio Test":"#a78bfa","Parametric":"#34d399","Polar Area":"#fb923c"
 };
 function tc(t){return TC[t]||"#7c6af7";}
-function h2r(h){
-  return`${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
-}
+function h2r(h){return`${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;}
 
-// Tier colors: [headHex, bodyRgb]
 const TIERS=[
-  ["#c4b5fd","167,139,250"],
-  ["#93c5fd","59,130,246"],
-  ["#6ee7b7","16,185,129"],
-  ["#fde68a","234,179,8"],
-  ["#fca5a5","239,68,68"]
+  ["#c4b5fd","167,139,250"],["#93c5fd","59,130,246"],
+  ["#6ee7b7","16,185,129"],["#fde68a","234,179,8"],["#fca5a5","239,68,68"]
 ];
 
 // ── CANVAS ───────────────────────────────────────────────────
@@ -359,26 +395,31 @@ const CELL=20,COLS=28,ROWS=28,W=560,H=560;
 const SPEEDS=[165,135,108,85,68];
 
 // ── STATE ────────────────────────────────────────────────────
-let snake,dir,nextDir,food,score,correct,tier,streak;
+let snake,dir,nextDir,food,pu,score,correct,tier,streak;
 let grow,qDone,gState,loopId,rafId;
-let parts=[],floats=[],dflash=0;
+let parts=[],floats=[],dflash=0,puFlash={a:0,rgb:"255,255,255"};
+let shielded=false,ecActive=false,slowed=false,slowTid=null;
 const used=new Set();
 
 function reset(){
   snake=[{x:14,y:14},{x:13,y:14},{x:12,y:14}];
   dir={dx:1,dy:0};nextDir={dx:1,dy:0};
-  food=null;score=0;correct=0;tier=0;streak=0;
-  grow=0;qDone=false;parts=[];floats=[];dflash=0;
+  food=null;pu=null;score=0;correct=0;tier=0;streak=0;
+  grow=0;qDone=false;
+  parts=[];floats=[];dflash=0;puFlash={a:0,rgb:"255,255,255"};
+  shielded=false;ecActive=false;slowed=false;
+  if(slowTid){clearTimeout(slowTid);slowTid=null;}
   used.clear();hudUp();
 }
 
-// ── LOOP ─────────────────────────────────────────────────────
+// ── GAME LOOP ────────────────────────────────────────────────
 function startGame(){
   reset();showOv("");gState="play";spawnFood();
-  clearInterval(loopId);loopId=setInterval(tick,SPEEDS[tier]);
+  clearInterval(loopId);loopId=setInterval(tick,spd());
   cancelAnimationFrame(rafId);
   (function r(){draw();rafId=requestAnimationFrame(r);})();
 }
+function spd(){return slowed?Math.round(SPEEDS[tier]*1.9):SPEEDS[tier];}
 
 function tick(){
   if(gState!=="play")return;
@@ -387,12 +428,56 @@ function tick(){
   if(h.x<0||h.x>=COLS||h.y<0||h.y>=ROWS){die();return;}
   if(snake.slice(0,-1).some(s=>s.x===h.x&&s.y===h.y)){die();return;}
   snake.unshift(h);
+
+  // Powerup collision
+  if(pu&&h.x===pu.x&&h.y===pu.y){
+    applyPu(pu.id,h.x*CELL+CELL/2,h.y*CELL+CELL/2);
+    pu=null;
+  }
+
+  // Food collision
   if(food&&h.x===food.x&&h.y===food.y){
     const qi=food.qi,fx=food.x,fy=food.y;
     food=null;snake.pop();gState="q";
     showQ(qi,fx,fy);
   } else {
     grow>0?grow--:snake.pop();
+  }
+  hudUp();
+}
+
+// ── POWER-UP APPLY ────────────────────────────────────────────
+function applyPu(id,px,py){
+  const pt=puType(id);
+  puFlash={a:0.75,rgb:pt.rgb};
+  spawnParts(px,py,16,pt.col);
+  addFloat(px,py,pt.msg,pt.col,16);
+  addFloat(px,py-28,pt.label,"rgba(255,255,255,0.85)",11);
+  switch(id){
+    case"partner":
+      score+=100;correct++;streak++;grow=1;
+      tier=Math.min(Math.floor(correct/5),SPEEDS.length-1);
+      addFloat(px,py-52,rndPh(PH.right),"#a78bfa",12);
+      break;
+    case"drop":
+      shielded=true;
+      break;
+    case"bonus":
+      score+=200;
+      break;
+    case"slow":
+      slowed=true;
+      clearInterval(loopId);loopId=setInterval(tick,spd());
+      if(slowTid)clearTimeout(slowTid);
+      slowTid=setTimeout(()=>{
+        slowed=false;
+        clearInterval(loopId);loopId=setInterval(tick,spd());
+        slowTid=null;
+      },8000);
+      break;
+    case"extra":
+      ecActive=true;
+      break;
   }
   hudUp();
 }
@@ -431,30 +516,51 @@ function pick(idx,qi,fx,fy){
   });
   const bnr=document.getElementById("bnr");
   const cont=document.getElementById("contBtn");
+
   if(ok){
-    score+=100;correct++;streak++;grow=1;
+    score+=100;correct++;streak++;
+    const growAmt=ecActive?2:1;ecActive=false;
+    grow=growAmt;
     tier=Math.min(Math.floor(correct/5),SPEEDS.length-1);
     spawnParts(px,py,14,tc(q.topic));
-    addFloat(px,py,"+100","#34d399");
-    if(streak>=3)addFloat(px,py-26,`STREAK x${streak}!`,"#fbbf24");
+    addFloat(px,py,ecActive?"+100 x2!":"+100","#34d399",15);
+    // Teacher phrase
+    const phrase=rndPh(PH.right);
+    addFloat(px,py-30,phrase,"#c4b5fd",13);
+    // Streak phrase center
+    if(streak>=3){
+      addFloat(W/2,H*0.38,rndPh(PH.streak),"#fbbf24",20);
+    }
     bnr.textContent=streak>=3
       ?`Correct! +100 pts  |  Streak x${streak}!  |  Speed x${tier+1}`
-      :`Correct! +100 pts, you grow! (Speed x${tier+1})`;
+      :`Correct! +100 pts, you grow!${ecActive?" x2":""} (Speed x${tier+1})`;
     bnr.className="bnr on c";
     cont.textContent="Continue";cont.onclick=resume;
   } else {
-    streak=0;
-    spawnParts(px,py,10,"#f87171");
-    addFloat(px,py,"WRONG","#f87171");
-    if(snake.length<=1){
-      bnr.textContent="Incorrect, no segments left. Game Over!";
-      bnr.className="bnr on w";
-      cont.textContent="See Score";cont.onclick=die;
-    } else {
-      snake.pop();
-      bnr.textContent=`Incorrect, you shrink! (${snake.length} left)`;
-      bnr.className="bnr on w";
+    if(shielded){
+      shielded=false;streak=0;
+      spawnParts(px,py,10,"#4ade80");
+      addFloat(px,py,"SHIELD USED!","#4ade80",15);
+      addFloat(px,py-28,"Quiz Drop saved you!","#4ade80",12);
+      addFloat(px,py-50,rndPh(PH.wrong),"#f87171",12);
+      bnr.textContent="Wrong, but Quiz Drop shield saved you! No penalty.";
+      bnr.className="bnr on c";
       cont.textContent="Continue";cont.onclick=resume;
+    } else {
+      streak=0;ecActive=false;
+      spawnParts(px,py,10,"#f87171");
+      addFloat(px,py,"WRONG","#f87171",15);
+      addFloat(px,py-28,rndPh(PH.wrong),"#f87171",12);
+      if(snake.length<=1){
+        bnr.textContent="Incorrect, no segments left. Game Over!";
+        bnr.className="bnr on w";
+        cont.textContent="See Score";cont.onclick=die;
+      } else {
+        snake.pop();
+        bnr.textContent=`Incorrect, you shrink! (${snake.length} left)`;
+        bnr.className="bnr on w";
+        cont.textContent="Continue";cont.onclick=resume;
+      }
     }
   }
   document.getElementById("solC").innerHTML=q.sol;
@@ -466,12 +572,13 @@ function pick(idx,qi,fx,fy){
 function resume(){
   if(gState==="dead")return;
   showOv("");gState="play";spawnFood();
-  clearInterval(loopId);loopId=setInterval(tick,SPEEDS[tier]);
+  clearInterval(loopId);loopId=setInterval(tick,spd());
 }
 
 // ── GAME OVER ────────────────────────────────────────────────
 function die(){
   gState="dead";clearInterval(loopId);dflash=1;
+  if(slowTid){clearTimeout(slowTid);slowTid=null;}slowed=false;
   const best=+localStorage.getItem("igBest")||0;
   const isNew=score>best;
   if(isNew)localStorage.setItem("igBest",score);
@@ -488,7 +595,7 @@ function die(){
 }
 function goHome(){gState="home";clearInterval(loopId);showOv("home");}
 
-// ── FOOD ─────────────────────────────────────────────────────
+// ── FOOD + POWERUP SPAWN ──────────────────────────────────────
 function spawnFood(){
   if(used.size>=QS.length)used.clear();
   let qi;do{qi=Math.floor(Math.random()*QS.length);}while(used.has(qi));
@@ -497,21 +604,31 @@ function spawnFood(){
   do{p={x:Math.floor(Math.random()*COLS),y:Math.floor(Math.random()*ROWS)};}
   while(snake.some(s=>s.x===p.x&&s.y===p.y));
   food={...p,qi};
+
+  // 42% chance to also spawn a powerup
+  pu=null;
+  if(Math.random()<0.42){
+    const pt=PU[Math.floor(Math.random()*PU.length)];
+    let pp;
+    do{pp={x:Math.floor(Math.random()*COLS),y:Math.floor(Math.random()*ROWS)};}
+    while(snake.some(s=>s.x===pp.x&&s.y===pp.y)||(pp.x===food.x&&pp.y===food.y));
+    pu={...pp,id:pt.id};
+  }
 }
 
 // ── EFFECTS ──────────────────────────────────────────────────
 function spawnParts(x,y,n,col){
   for(let i=0;i<n;i++){
-    const a=(Math.PI*2*i/n)+(Math.random()-.5)*.7;
-    const sp=1.6+Math.random()*3.2;
+    const a=(Math.PI*2*i/n)+(Math.random()-.5)*.8;
+    const sp=1.6+Math.random()*3.4;
     parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
-      life:1,decay:.026+Math.random()*.024,col,r:2+Math.random()*2.5});
+      life:1,decay:.026+Math.random()*.024,col,r:2+Math.random()*2.8});
   }
-  if(parts.length>140)parts.splice(0,parts.length-140);
+  if(parts.length>160)parts.splice(0,parts.length-160);
 }
-function addFloat(x,y,txt,col){
-  floats.push({x,y,txt,col,life:1,vy:-1.3});
-  if(floats.length>10)floats.shift();
+function addFloat(x,y,txt,col,sz=15){
+  floats.push({x,y,txt,col,sz,life:1,vy:-1.2});
+  if(floats.length>14)floats.shift();
 }
 
 // ── INPUT ────────────────────────────────────────────────────
@@ -538,10 +655,10 @@ function hudUp(){
   el.textContent=score;el.classList.remove("pop");
   void el.offsetWidth;el.classList.add("pop");
   document.getElementById("hLen").textContent=snake?snake.length:3;
-  document.getElementById("hSpd").textContent=`x${tier+1}`;
+  document.getElementById("hSpd").textContent=slowed?`x${tier+1} (slow)`:`x${tier+1}`;
   const se=document.getElementById("hStrk");
   se.textContent=streak;
-  se.style.color=streak>=3?"var(--gold)":streak>0?"var(--correct)":"var(--muted)";
+  se.style.color=streak>=5?"#f97316":streak>=3?"var(--gold)":streak>0?"var(--correct)":"var(--muted)";
 }
 function bestUp(){
   const b=localStorage.getItem("igBest")||"0";
@@ -559,103 +676,150 @@ function showOv(w){
   Object.entries(m).forEach(([k,id])=>document.getElementById(id).classList.toggle("on",k===w));
 }
 
+// ── CANVAS BADGE ─────────────────────────────────────────────
+function badge(txt,col,x,y){
+  ctx.save();
+  ctx.font="bold 9px 'Segoe UI'";
+  const tw=ctx.measureText(txt).width;
+  ctx.fillStyle="rgba(0,0,0,.55)";
+  ctx.fillRect(x-3,y-7,tw+10,16);
+  ctx.strokeStyle=col;ctx.lineWidth=1;
+  ctx.strokeRect(x-3,y-7,tw+10,16);
+  ctx.fillStyle=col;ctx.textAlign="left";ctx.textBaseline="middle";
+  ctx.fillText(txt,x+2,y+1);
+  ctx.restore();
+}
+
 // ── DRAW ─────────────────────────────────────────────────────
 function draw(){
-  // Background radial gradient
-  const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*.78);
+  // Background
+  const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*.8);
   bg.addColorStop(0,"#141627");bg.addColorStop(1,"#080910");
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
 
-  // Minor grid lines
-  ctx.strokeStyle="#0e1028";ctx.lineWidth=.5;
+  // ── GRID (much more visible) ──
+  // Minor lines
+  ctx.strokeStyle="#1c203f";ctx.lineWidth=.7;
   for(let c=0;c<=COLS;c++){ctx.beginPath();ctx.moveTo(c*CELL,0);ctx.lineTo(c*CELL,H);ctx.stroke();}
   for(let r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*CELL);ctx.lineTo(W,r*CELL);ctx.stroke();}
-
-  // Major grid (every 5 cells)
-  ctx.strokeStyle="#171b38";ctx.lineWidth=.9;
+  // Major lines (every 5 cells)
+  ctx.strokeStyle="#272d5a";ctx.lineWidth=1.1;
   for(let c=0;c<=COLS;c+=5){ctx.beginPath();ctx.moveTo(c*CELL,0);ctx.lineTo(c*CELL,H);ctx.stroke();}
   for(let r=0;r<=ROWS;r+=5){ctx.beginPath();ctx.moveTo(0,r*CELL);ctx.lineTo(W,r*CELL);ctx.stroke();}
-
   // Axes
   const ax=14*CELL,ay=14*CELL;
-  ctx.strokeStyle="#1e2245";ctx.lineWidth=1.5;
+  ctx.strokeStyle="#32387a";ctx.lineWidth=1.8;
   ctx.beginPath();ctx.moveTo(ax,0);ctx.lineTo(ax,H);ctx.stroke();
   ctx.beginPath();ctx.moveTo(0,ay);ctx.lineTo(W,ay);ctx.stroke();
+  // Axis arrows
+  ctx.fillStyle="#32387a";
+  const aw=5;
+  // Right arrow
+  ctx.beginPath();ctx.moveTo(W-2,ay);ctx.lineTo(W-2-aw*2,ay-aw);ctx.lineTo(W-2-aw*2,ay+aw);ctx.fill();
+  // Up arrow
+  ctx.beginPath();ctx.moveTo(ax,2);ctx.lineTo(ax-aw,2+aw*2);ctx.lineTo(ax+aw,2+aw*2);ctx.fill();
 
   // Coordinate labels
-  ctx.fillStyle="#1b2050";ctx.font="9px monospace";
+  ctx.fillStyle="#343a7a";ctx.font="9px monospace";
   ctx.textAlign="center";ctx.textBaseline="top";
-  [4,9,19,24].forEach(c=>{
-    if(c*CELL+CELL/2===ax)return;
-    ctx.fillText(c-14,c*CELL+CELL/2,ay+5);
+  [4,9,14,19,24].forEach(c=>{
+    const lbl=c-14;
+    if(lbl===0)return;
+    ctx.fillText(lbl,c*CELL+CELL/2,ay+5);
+    // tick mark
+    ctx.strokeStyle="#343a7a";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(c*CELL+CELL/2,ay-3);ctx.lineTo(c*CELL+CELL/2,ay+3);ctx.stroke();
   });
   ctx.textAlign="right";ctx.textBaseline="middle";
   [4,9,19,24].forEach(r=>{
-    if(r*CELL+CELL/2===ay)return;
-    ctx.fillText(14-r,ax-5,r*CELL+CELL/2);
+    const lbl=14-r;
+    ctx.fillText(lbl,ax-5,r*CELL+CELL/2);
+    ctx.strokeStyle="#343a7a";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(ax-3,r*CELL+CELL/2);ctx.lineTo(ax+3,r*CELL+CELL/2);ctx.stroke();
   });
+  // Axis labels
+  ctx.fillStyle="#3a4285";ctx.font="bold 9px monospace";
+  ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText("x",W-10,ay-8);
+  ctx.textAlign="center";ctx.textBaseline="top";ctx.fillText("y",ax+7,4);
 
-  // Animated curves visible through overlay
+  // Animated background curves (visible through overlay)
   if(gState!=="play"){
     const t=Date.now()/2800;
-    [[`rgba(124,106,247,.1)`,2,55,55,1],[`rgba(251,191,36,.07)`,1.5,35,42,1.3],[`rgba(52,211,153,.07)`,1,28,38,.85]]
-      .forEach(([col,lw,amp,freq,spd],vi)=>{
-        ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.beginPath();
-        const base=vi===0?H/2:vi===1?H*.33:H*.66;
-        for(let x=0;x<=W;x+=2){
-          const y=base+amp*Math.sin(x/freq+t*spd*(vi%2===0?1:-1));
-          x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-        }
-        ctx.stroke();
-      });
+    [[`rgba(124,106,247,.13)`,2,55,55,1],
+     [`rgba(251,191,36,.09)`,1.5,35,42,1.3],
+     [`rgba(52,211,153,.09)`,1,28,38,.85]]
+    .forEach(([col,lw,amp,freq,spd],vi)=>{
+      ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.beginPath();
+      const base=vi===0?H/2:vi===1?H*.33:H*.66;
+      for(let x=0;x<=W;x+=2){
+        const y=base+amp*Math.sin(x/freq+t*spd*(vi%2===0?1:-1));
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }ctx.stroke();
+    });
   }
 
   if(!snake||!snake.length)return;
 
-  // Update particles
+  // Update particles + floats
   parts=parts.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.09;p.life-=p.decay;return p.life>0;});
-  floats=floats.filter(f=>{f.y+=f.vy;f.life-=.02;return f.life>0;});
+  floats=floats.filter(f=>{f.y+=f.vy;f.life-=.018;return f.life>0;});
 
-  // Food
+  // ── FOOD ──────────────────────────────────────────────────
   if(food){
     const q=QS[food.qi];
     const fx=food.x*CELL+CELL/2,fy=food.y*CELL+CELL/2;
     const col=tc(q.topic),rgb=h2r(col);
-    const pu=.6+.4*Math.sin(Date.now()/380);
+    const pu2=.6+.4*Math.sin(Date.now()/380);
     const orb=Date.now()/700;
-
-    // Outer glow
     const grd=ctx.createRadialGradient(fx,fy,0,fx,fy,CELL*1.7);
-    grd.addColorStop(0,`rgba(${rgb},${pu*.42})`);
-    grd.addColorStop(1,`rgba(${rgb},0)`);
+    grd.addColorStop(0,`rgba(${rgb},${pu2*.42})`);grd.addColorStop(1,`rgba(${rgb},0)`);
     ctx.fillStyle=grd;ctx.beginPath();ctx.arc(fx,fy,CELL*1.7,0,Math.PI*2);ctx.fill();
-
-    // Orbiting arc
     ctx.strokeStyle=`rgba(${rgb},.65)`;ctx.lineWidth=1.8;
     ctx.beginPath();ctx.arc(fx,fy,CELL*.9,orb,orb+Math.PI*1.35);ctx.stroke();
-    // Second arc offset
-    ctx.strokeStyle=`rgba(${rgb},.3)`;ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(fx,fy,CELL*.9,orb+Math.PI,orb+Math.PI*2.2);ctx.stroke();
-
-    // Outer ring
-    ctx.strokeStyle=`rgba(${rgb},.2)`;ctx.lineWidth=.8;
+    ctx.strokeStyle=`rgba(${rgb},.28)`;ctx.lineWidth=.9;
     ctx.beginPath();ctx.arc(fx,fy,CELL*.9,0,Math.PI*2);ctx.stroke();
-
-    // Filled circle
     ctx.fillStyle=col;ctx.beginPath();ctx.arc(fx,fy,CELL/2-1,0,Math.PI*2);ctx.fill();
-    // Dark inset
     ctx.fillStyle="rgba(8,6,20,.82)";ctx.beginPath();ctx.arc(fx,fy,CELL/2-3,0,Math.PI*2);ctx.fill();
-    // Question mark
     ctx.fillStyle=col;ctx.font=`bold ${CELL*.57}px monospace`;
     ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("?",fx,fy);
-
-    // Topic label above
-    ctx.fillStyle=`rgba(${rgb},.75)`;ctx.font=`600 ${CELL*.3}px 'Segoe UI'`;
-    ctx.textAlign="center";ctx.textBaseline="bottom";
-    ctx.fillText(q.topic.toUpperCase(),fx,fy-CELL*.72);
+    ctx.fillStyle=`rgba(${rgb},.78)`;ctx.font=`600 ${CELL*.3}px 'Segoe UI'`;
+    ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText(q.topic.toUpperCase(),fx,fy-CELL*.72);
   }
 
-  // Snake body line
+  // ── POWER-UP (diamond) ────────────────────────────────────
+  if(pu){
+    const pt=puType(pu.id);
+    const px=pu.x*CELL+CELL/2,py=pu.y*CELL+CELL/2;
+    const col=pt.col,rgb=pt.rgb;
+    const rot=Date.now()/550;
+    const pu2=.55+.45*Math.sin(Date.now()/300);
+    // Glow
+    const grd=ctx.createRadialGradient(px,py,0,px,py,CELL*1.9);
+    grd.addColorStop(0,`rgba(${rgb},${pu2*.5})`);grd.addColorStop(1,`rgba(${rgb},0)`);
+    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(px,py,CELL*1.9,0,Math.PI*2);ctx.fill();
+    // Spinning outer ring
+    ctx.save();ctx.translate(px,py);ctx.rotate(rot);
+    ctx.strokeStyle=`rgba(${rgb},.7)`;ctx.lineWidth=1.5;
+    ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(0,0,CELL*.85,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);ctx.restore();
+    // Diamond
+    ctx.save();ctx.translate(px,py);ctx.rotate(rot*.5);
+    ctx.beginPath();
+    ctx.moveTo(0,-CELL*.62);ctx.lineTo(CELL*.46,0);
+    ctx.lineTo(0,CELL*.62);ctx.lineTo(-CELL*.46,0);
+    ctx.closePath();
+    ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.22)";ctx.lineWidth=1;ctx.stroke();
+    ctx.restore();
+    // Symbol text
+    ctx.fillStyle="rgba(10,8,24,.88)";ctx.font=`bold ${CELL*.45}px 'Segoe UI'`;
+    ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(pt.sym,px,py);
+    // Label above
+    ctx.fillStyle=`rgba(${rgb},.85)`;ctx.font=`700 ${CELL*.28}px 'Segoe UI'`;
+    ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText(pt.label,px,py-CELL*.78);
+  }
+
+  // ── SNAKE BODY ────────────────────────────────────────────
   if(snake.length>1){
     const [hc,br]=TIERS[tier];
     const h=snake[0],tl=snake[snake.length-1];
@@ -665,21 +829,34 @@ function draw(){
     snake.forEach((s,i)=>{const x=s.x*CELL+CELL/2,y=s.y*CELL+CELL/2;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
     ctx.strokeStyle=grd;ctx.lineWidth=CELL*.74;ctx.lineJoin="round";ctx.lineCap="round";ctx.stroke();
   }
-
+  // Shield ring around head
+  if(shielded){
+    const sx=snake[0].x*CELL+CELL/2,sy=snake[0].y*CELL+CELL/2;
+    const sr=.5+.5*Math.sin(Date.now()/200);
+    ctx.strokeStyle=`rgba(74,222,128,${.5+sr*.4})`;ctx.lineWidth=2;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.arc(sx,sy,CELL*.9+sr*3,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  // EC ring around head
+  if(ecActive){
+    const sx=snake[0].x*CELL+CELL/2,sy=snake[0].y*CELL+CELL/2;
+    const sr=.5+.5*Math.sin(Date.now()/180);
+    ctx.strokeStyle=`rgba(253,230,138,${.5+sr*.4})`;ctx.lineWidth=2;
+    ctx.setLineDash([3,4]);
+    ctx.beginPath();ctx.arc(sx,sy,CELL*.95+sr*3,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);
+  }
   // Snake segments
   snake.forEach((s,i)=>{
     const sx=s.x*CELL+CELL/2,sy=s.y*CELL+CELL/2;
     const [hc,br]=TIERS[tier];
     if(i===0){
-      // Glow halo
       const grd=ctx.createRadialGradient(sx,sy,0,sx,sy,CELL*1.45);
       grd.addColorStop(0,`rgba(${br},.52)`);grd.addColorStop(1,`rgba(${br},0)`);
       ctx.fillStyle=grd;ctx.beginPath();ctx.arc(sx,sy,CELL*1.45,0,Math.PI*2);ctx.fill();
-      // Head fill
       ctx.fillStyle=hc;ctx.beginPath();ctx.arc(sx,sy,CELL/2-1,0,Math.PI*2);ctx.fill();
-      // Specular highlight
       ctx.fillStyle="rgba(255,255,255,.28)";ctx.beginPath();ctx.arc(sx-2,sy-2,CELL/2-5,0,Math.PI*2);ctx.fill();
-      // Integral symbol
       ctx.fillStyle="rgba(14,9,36,.9)";ctx.font=`bold ${CELL*.74}px serif`;
       ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("∫",sx,sy);
     } else {
@@ -693,27 +870,34 @@ function draw(){
     }
   });
 
-  // Particles
+  // ── PARTICLES + FLOATS ────────────────────────────────────
   ctx.save();
   parts.forEach(p=>{ctx.globalAlpha=p.life;ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();});
   ctx.restore();
-
-  // Floating text
   ctx.save();
   floats.forEach(f=>{
     ctx.globalAlpha=f.life;ctx.fillStyle=f.col;
-    ctx.font="bold 15px 'Segoe UI'";ctx.textAlign="center";ctx.textBaseline="middle";
-    // Shadow
-    ctx.shadowColor=f.col;ctx.shadowBlur=6;
+    ctx.font=`bold ${f.sz}px 'Segoe UI'`;
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.shadowColor=f.col;ctx.shadowBlur=8;
     ctx.fillText(f.txt,f.x,f.y);ctx.shadowBlur=0;
   });
   ctx.restore();
 
-  // Death flash
+  // Active status badges (top-left of canvas)
+  let by=8;
+  if(shielded){badge("SHIELDED","#4ade80",8,by);by+=20;}
+  if(ecActive){badge("EXTRA CREDIT READY","#fde68a",8,by);by+=20;}
+  if(slowed){badge("STUDY HALL (slowed)","#fb923c",8,by);}
+
+  // Death / powerup flash
   if(dflash>0){
-    ctx.fillStyle=`rgba(239,68,68,${dflash*.48})`;
-    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=`rgba(239,68,68,${dflash*.48})`;ctx.fillRect(0,0,W,H);
     dflash=Math.max(0,dflash-.055);
+  }
+  if(puFlash.a>0){
+    ctx.fillStyle=`rgba(${puFlash.rgb},${puFlash.a*.22})`;ctx.fillRect(0,0,W,H);
+    puFlash.a=Math.max(0,puFlash.a-.04);
   }
 }
 
