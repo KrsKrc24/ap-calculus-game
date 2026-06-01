@@ -209,7 +209,7 @@
         <div class="pu-row"><div class="pu-dot" style="background:#22d3ee"></div><span style="color:#22d3ee;font-weight:700">PARTNER QUIZ</span>&nbsp;Free correct answer + grow</div>
         <div class="pu-row"><div class="pu-dot" style="background:#4ade80"></div><span style="color:#4ade80;font-weight:700">QUIZ DROP</span>&nbsp;Shield from next wrong answer</div>
         <div class="pu-row"><div class="pu-dot" style="background:#e879f9"></div><span style="color:#e879f9;font-weight:700">GRADE CURVE</span>&nbsp;+200 bonus points</div>
-        <div class="pu-row"><div class="pu-dot" style="background:#fb923c"></div><span style="color:#fb923c;font-weight:700">STUDY HALL</span>&nbsp;Speed slows for 8 seconds</div>
+        <div class="pu-row"><div class="pu-dot" style="background:#fb923c"></div><span style="color:#fb923c;font-weight:700">FLEXTIME</span>&nbsp;Speed slows for 8 seconds</div>
         <div class="pu-row"><div class="pu-dot" style="background:#fde68a"></div><span style="color:#fde68a;font-weight:700">EXTRA CREDIT</span>&nbsp;Grow by 2 on next correct answer</div>
       </div>
       <div id="homeHS" style="font-size:.82rem;color:var(--muted)"></div>
@@ -333,16 +333,16 @@ const PH={
   right:[
     "You got this!","Ms. Crain would be proud!","Ms. Hartel approves!",
     "AP ready!","That's the move fr","No cap W answer","Built different",
-    "Calc hits different","Let's go!","Clean work!","Locked in!",
+    "Let's go!","Clean work!","Locked in!",
     "Scholar behavior!","Ms. Crain said bet!","Ms. Hartel said that's it!",
-    "Straight A vibes","You ate that","Not even close","Calculus king!",
+    "Straight A vibes","Not even close","Calculus king!",
     "Certified AP student","That's real Calculus","W rizz on that one",
     "Ms. Crain clapping rn","Ms. Hartel took notes","Too easy",
     "AP exam scared of you","Goated fr","Nobody stopping you",
   ],
   wrong:[
     "Ms. Crain believes in you!","Ms. Hartel says keep going!",
-    "Shake it off!","Next one's yours","Study mode: on",
+    "Next one's yours","Study mode: on",
     "Review that one later","You still got this!","One wrong ain't the end",
     "Ms. Crain said bounce back","Ms. Hartel believes in you",
   ],
@@ -363,7 +363,7 @@ const PU=[
    msg:"SHIELDED!",effect:"shield"},
   {id:"curve",  label:"GRADE CURVE",  sym:"+C",col:"#e879f9",rgb:"232,121,249",
    msg:"+200 BONUS!",effect:"bonus"},
-  {id:"hall",   label:"STUDY HALL",   sym:"SH",col:"#fb923c",rgb:"251,146,60",
+  {id:"hall",   label:"FLEXTIME",   sym:"SH",col:"#fb923c",rgb:"251,146,60",
    msg:"SPEED REDUCED!",effect:"slow"},
   {id:"extra",  label:"EXTRA CREDIT", sym:"EC",col:"#fde68a",rgb:"253,230,138",
    msg:"EXTRA CREDIT ACTIVE!",effect:"double"},
@@ -888,7 +888,7 @@ function draw(){
   let by=8;
   if(shielded){badge("SHIELDED","#4ade80",8,by);by+=20;}
   if(ecActive){badge("EXTRA CREDIT READY","#fde68a",8,by);by+=20;}
-  if(slowed){badge("STUDY HALL (slowed)","#fb923c",8,by);}
+  if(slowed){badge("FLEXTIME (slowed)","#fb923c",8,by);}
 
   // Death / powerup flash
   if(dflash>0){
