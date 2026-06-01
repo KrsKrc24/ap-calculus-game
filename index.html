@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>INTEGRAL — AP Calculus Game</title>
+  <title>INTEGRAL | AP Calculus Game</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
     onload="renderAllMath()"></script>
   <style>
     :root {
-      --bg:#0f1117; --surface:#161820; --card:#1e2030;
+      --bg:#090a12; --surface:#11131e; --card:#181a28;
       --accent:#7c6af7; --accent2:#a78bfa;
       --gold:#fbbf24; --correct:#34d399; --wrong:#f87171;
-      --text:#e2e2ef; --muted:#6b7280; --border:#2a2d3e;
+      --text:#e2e2ef; --muted:#6b7280; --border:#252840;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
     body{
-      background:var(--bg);color:var(--text);
-      font-family:'Segoe UI',system-ui,sans-serif;
+      background:radial-gradient(ellipse at 50% 0%,#12152e 0%,var(--bg) 65%);
+      color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;
       min-height:100vh;display:flex;flex-direction:column;
       align-items:center;padding:12px;gap:10px;
     }
@@ -27,592 +27,707 @@
     #hud{
       width:100%;max-width:560px;display:flex;
       justify-content:space-between;align-items:center;
-      padding:8px 16px;background:var(--card);
-      border:1px solid var(--border);border-radius:10px;
-      font-size:.85rem;flex-wrap:wrap;gap:6px;
+      padding:10px 18px;
+      background:linear-gradient(135deg,#181a2e,#1c1e34);
+      border:1px solid rgba(124,106,247,.28);border-radius:12px;
+      font-size:.82rem;flex-wrap:wrap;gap:8px;
+      box-shadow:0 0 24px rgba(124,106,247,.08);
     }
-    #hud .logo{font-weight:900;font-size:1.2rem;letter-spacing:4px;color:var(--accent2);}
-    #hud strong{color:var(--accent2);}
+    #hud .logo{font-weight:900;font-size:1.5rem;color:var(--accent2);
+      text-shadow:0 0 14px rgba(167,139,250,.65);}
+    .hud-item{display:flex;flex-direction:column;align-items:center;gap:1px;}
+    .hud-lbl{font-size:.58rem;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);}
+    .hud-val{font-size:.95rem;font-weight:700;color:var(--accent2);}
+    #hScore{transition:color .2s;}
+    #hScore.pop{animation:scorePop .35s ease;}
+    @keyframes scorePop{0%{transform:scale(1)}50%{transform:scale(1.45);color:var(--correct)}100%{transform:scale(1)}}
 
     /* GAME WRAPPER */
-    #gameWrapper{
+    #gw{
       position:relative;width:560px;height:560px;
-      border:1px solid var(--border);border-radius:12px;overflow:hidden;
-      flex-shrink:0;
+      border:1px solid rgba(124,106,247,.35);border-radius:14px;
+      overflow:hidden;flex-shrink:0;
+      box-shadow:0 0 0 1px rgba(124,106,247,.1),
+                 0 0 40px rgba(124,106,247,.13),
+                 0 0 90px rgba(124,106,247,.05);
     }
-    @media(max-width:600px){
-      #gameWrapper{width:calc(100vw - 24px);height:calc(100vw - 24px);}
-    }
+    @media(max-width:600px){#gw{width:calc(100vw - 24px);height:calc(100vw - 24px);}}
     canvas{display:block;width:100%;height:100%;}
 
     /* OVERLAY */
-    #overlay{
+    #ov{
       position:absolute;inset:0;
-      background:rgba(15,17,23,.93);backdrop-filter:blur(6px);
+      background:rgba(7,8,16,.87);
+      backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
       display:none;flex-direction:column;
       align-items:center;justify-content:center;
-      padding:20px;gap:16px;overflow-y:auto;
+      padding:20px;gap:14px;overflow-y:auto;
     }
-    #overlay.on{display:flex;}
-    .scr{display:none;flex-direction:column;align-items:center;gap:14px;width:100%;}
-    .scr.on{display:flex;}
+    #ov.on{display:flex;}
+    .scr{display:none;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:480px;}
+    .scr.on{display:flex;animation:fadeUp .22s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
     /* HOME */
-    .game-title{
-      font-size:3.2rem;font-weight:900;letter-spacing:8px;color:var(--accent2);
-      text-shadow:0 0 40px rgba(167,139,250,.55);
+    .gtitle{
+      font-size:3.8rem;font-weight:900;letter-spacing:10px;
+      background:linear-gradient(135deg,#c4b5fd 0%,#7c6af7 48%,#60a5fa 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      filter:drop-shadow(0 0 22px rgba(167,139,250,.45));
     }
-    .game-sub{font-size:.88rem;color:var(--muted);text-align:center;max-width:360px;line-height:1.6;}
-    .instructions{
-      background:var(--card);border:1px solid var(--border);border-radius:10px;
-      padding:14px 18px;font-size:.82rem;color:var(--muted);line-height:1.8;
-      max-width:380px;width:100%;
+    .gsub{font-size:.88rem;color:var(--muted);text-align:center;max-width:340px;line-height:1.65;}
+    .inst{
+      background:rgba(18,20,36,.85);border:1px solid var(--border);border-radius:12px;
+      padding:14px 18px;font-size:.82rem;color:var(--muted);line-height:2.1;
+      width:100%;
     }
-    .instructions b{color:var(--text);}
+    .irow{display:flex;align-items:center;gap:9px;}
+    .idot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+    .kbd{display:inline-block;background:var(--card);border:1px solid var(--border);
+      border-radius:5px;padding:1px 7px;font-family:monospace;color:var(--text);font-size:.76rem;}
+    .blink{font-size:.72rem;color:var(--muted);letter-spacing:1px;animation:blink 1.5s ease infinite;}
+    @keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
 
     /* BUTTONS */
-    .btn{
-      padding:12px 30px;border-radius:40px;border:none;cursor:pointer;
-      font-size:.95rem;font-weight:700;transition:all .15s;letter-spacing:.3px;
-    }
-    .btn-primary{background:var(--accent);color:#fff;}
-    .btn-primary:hover{background:var(--accent2);transform:translateY(-1px);}
-    .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
-    .btn-ghost:hover{color:var(--text);border-color:var(--accent);}
-    .btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+    .btn{padding:12px 30px;border-radius:40px;border:none;cursor:pointer;
+      font-size:.95rem;font-weight:700;transition:all .15s;letter-spacing:.3px;}
+    .btn-p{background:linear-gradient(135deg,#7c6af7,#5f50c8);color:#fff;
+      box-shadow:0 4px 18px rgba(124,106,247,.38);}
+    .btn-p:hover{background:linear-gradient(135deg,#a78bfa,#7c6af7);transform:translateY(-2px);
+      box-shadow:0 6px 26px rgba(124,106,247,.48);}
+    .btn-g{background:transparent;color:var(--muted);border:1px solid var(--border);}
+    .btn-g:hover{color:var(--text);border-color:var(--accent);}
+    .brow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
 
     /* QUESTION PANEL */
-    #qPanel{
-      background:var(--card);border:1px solid var(--border);border-radius:16px;
-      padding:22px;width:100%;max-width:480px;
-      display:flex;flex-direction:column;gap:12px;
-      max-height:85vh;overflow-y:auto;
+    #qp{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-left:4px solid var(--tc,#7c6af7);
+      border-radius:16px;padding:22px;width:100%;
+      display:flex;flex-direction:column;gap:13px;
+      max-height:84vh;overflow-y:auto;
+      box-shadow:0 10px 40px rgba(0,0,0,.45);
     }
-    .q-topic{font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);}
-    .q-text{font-size:.98rem;line-height:1.65;}
-    .choices{display:flex;flex-direction:column;gap:8px;}
-    .cbtn{
-      background:var(--surface);border:1px solid var(--border);border-radius:8px;
-      padding:11px 14px;cursor:pointer;text-align:left;
+    .qtopic{font-size:.66rem;font-weight:700;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--tc,var(--gold));}
+    .qtext{font-size:1rem;line-height:1.72;}
+    .choices{display:flex;flex-direction:column;gap:9px;}
+    .cb{
+      background:var(--surface);border:1px solid var(--border);border-radius:10px;
+      padding:12px 15px;cursor:pointer;text-align:left;
       font-size:.88rem;color:var(--text);transition:all .12s;
-      display:flex;align-items:center;gap:10px;
+      display:flex;align-items:center;gap:12px;
     }
-    .cbtn:hover:not(:disabled){border-color:var(--accent);background:var(--card);}
-    .cbtn .ltr{
-      width:24px;height:24px;border-radius:50%;background:var(--border);
+    .cb:hover:not(:disabled){border-color:var(--accent);background:rgba(124,106,247,.07);transform:translateX(4px);}
+    .cb .lt{width:26px;height:26px;border-radius:50%;background:var(--border);
       display:flex;align-items:center;justify-content:center;
-      font-weight:700;font-size:.72rem;flex-shrink:0;
-    }
-    .cbtn.ok{border-color:var(--correct);background:#0d2e22;}
-    .cbtn.ok .ltr{background:var(--correct);color:#000;}
-    .cbtn.no{border-color:var(--wrong);background:#2e0d0d;}
-    .cbtn.no .ltr{background:var(--wrong);color:#000;}
-    .cbtn:disabled{cursor:not-allowed;}
-    .banner{padding:9px 14px;border-radius:8px;font-weight:700;font-size:.88rem;display:none;}
-    .banner.on{display:block;}
-    .banner.c{background:#0d2e22;color:var(--correct);border:1px solid var(--correct);}
-    .banner.w{background:#2e0d0d;color:var(--wrong);border:1px solid var(--wrong);}
-    .sol{
-      display:none;background:var(--surface);border:1px solid var(--border);
-      border-radius:8px;padding:14px;font-size:.83rem;color:var(--muted);line-height:1.75;
-    }
-    .sol.on{display:block;}
-    .sol h4{font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--correct);margin-bottom:8px;}
-    .sol ol{padding-left:18px;}
-    .sol li,.sol p{margin-bottom:4px;}
+      font-weight:700;font-size:.72rem;flex-shrink:0;}
+    .cb.ok{border-color:var(--correct);background:rgba(52,211,153,.07);}
+    .cb.ok .lt{background:var(--correct);color:#000;}
+    .cb.no{border-color:var(--wrong);background:rgba(248,113,113,.07);}
+    .cb.no .lt{background:var(--wrong);color:#000;}
+    .cb:disabled{cursor:not-allowed;}
+    .bnr{padding:10px 14px;border-radius:8px;font-weight:700;font-size:.88rem;display:none;}
+    .bnr.on{display:block;animation:fadeUp .15s ease;}
+    .bnr.c{background:rgba(52,211,153,.09);color:var(--correct);border:1px solid rgba(52,211,153,.28);}
+    .bnr.w{background:rgba(248,113,113,.09);color:var(--wrong);border:1px solid rgba(248,113,113,.28);}
+    .sol{display:none;background:rgba(52,211,153,.04);
+      border:1px solid rgba(52,211,153,.14);border-left:3px solid var(--correct);
+      border-radius:8px;padding:14px;font-size:.83rem;color:var(--muted);line-height:1.82;}
+    .sol.on{display:block;animation:fadeUp .2s ease;}
+    .sol h4{font-size:.64rem;letter-spacing:2px;text-transform:uppercase;color:var(--correct);margin-bottom:8px;}
+    .sol ol{padding-left:18px;}.sol li,.sol p{margin-bottom:5px;}
 
-    /* GAMEOVER */
-    .go-score{font-size:4rem;font-weight:900;color:var(--accent2);text-shadow:0 0 20px rgba(167,139,250,.4);}
-    .go-lbl{font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
-    .chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
-    .chip{
-      background:var(--card);border:1px solid var(--border);border-radius:20px;
-      padding:6px 14px;font-size:.8rem;color:var(--muted);
+    /* GAME OVER */
+    .goscore{
+      font-size:4.5rem;font-weight:900;
+      background:linear-gradient(135deg,#c4b5fd,#7c6af7);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      filter:drop-shadow(0 0 18px rgba(167,139,250,.5));
     }
+    .golbl{font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+    .nbadge{background:linear-gradient(135deg,#fbbf24,#f97316);color:#000;
+      font-weight:900;font-size:.78rem;padding:5px 16px;border-radius:20px;
+      letter-spacing:1.5px;text-transform:uppercase;
+      animation:pop .4s cubic-bezier(.34,1.56,.64,1);}
+    @keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+    .chips{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;}
+    .chip{background:var(--card);border:1px solid var(--border);border-radius:20px;
+      padding:7px 15px;font-size:.79rem;color:var(--muted);}
     .chip strong{color:var(--text);}
 
     /* DPAD */
     #dpad{display:none;flex-direction:column;align-items:center;gap:4px;margin-top:4px;}
     @media(pointer:coarse){#dpad{display:flex;}}
     .drow{display:flex;gap:4px;}
-    .dbtn{
-      width:54px;height:54px;background:var(--card);border:1px solid var(--border);
-      border-radius:10px;color:var(--text);font-size:1.3rem;cursor:pointer;
+    .db{width:58px;height:58px;background:var(--card);border:1px solid var(--border);
+      border-radius:12px;color:var(--text);font-size:1.4rem;cursor:pointer;
       display:flex;align-items:center;justify-content:center;
-      -webkit-tap-highlight-color:transparent;user-select:none;
-    }
-    .dbtn:active{background:var(--accent);}
-    .dbtn.blank{background:transparent;border-color:transparent;pointer-events:none;}
+      -webkit-tap-highlight-color:transparent;user-select:none;transition:background .1s;}
+    .db:active{background:var(--accent);}
+    .db.blank{background:transparent;border-color:transparent;pointer-events:none;}
   </style>
 </head>
 <body>
 
-<!-- HUD -->
 <div id="hud">
   <div class="logo">∫</div>
-  <div>Σ&nbsp;=&nbsp;<strong id="hScore">0</strong></div>
-  <div>Length:&nbsp;<strong id="hLen">3</strong></div>
-  <div id="hSpeed" style="color:var(--muted)">Speed ×1</div>
-  <div style="color:var(--muted)">Best:&nbsp;<strong id="hBest">—</strong></div>
+  <div class="hud-item"><div class="hud-lbl">Score</div><div class="hud-val"><span id="hScore">0</span></div></div>
+  <div class="hud-item"><div class="hud-lbl">Length</div><div class="hud-val" id="hLen">3</div></div>
+  <div class="hud-item"><div class="hud-lbl">Speed</div><div class="hud-val" id="hSpd">x1</div></div>
+  <div class="hud-item"><div class="hud-lbl">Streak</div><div class="hud-val" id="hStrk">0</div></div>
+  <div class="hud-item"><div class="hud-lbl">Best</div><div class="hud-val" id="hBest" style="color:var(--gold)">0</div></div>
 </div>
 
-<!-- GAME -->
-<div id="gameWrapper">
+<div id="gw">
   <canvas id="game" width="560" height="560"></canvas>
+  <div id="ov" class="on">
 
-  <div id="overlay" class="on">
-
-    <!-- HOME -->
     <div id="homeScr" class="scr on">
-      <div class="game-title">INTEGRAL</div>
-      <div class="game-sub">Navigate the coordinate plane. Eat problem nodes. Answer correctly to grow — answer wrong to shrink.</div>
-      <div class="instructions">
-        <b>↑ ↓ ← →</b> or <b>WASD</b> to move<br>
-        <b>Correct answer</b> → +100 pts, grow by 1<br>
-        <b>Wrong answer</b> → shrink by 1<br>
-        <b>Hit a wall or yourself</b> → game over<br>
-        Speed increases every 5 correct answers
+      <div class="gtitle">INTEGRAL</div>
+      <div class="gsub">Navigate the coordinate plane. Collect problem nodes. Answer correctly to grow, wrong to shrink.</div>
+      <div class="inst">
+        <div class="irow"><div class="idot" style="background:#a78bfa"></div><span><span class="kbd">Arrow Keys</span> or <span class="kbd">WASD</span> to steer</span></div>
+        <div class="irow"><div class="idot" style="background:#34d399"></div><span>Correct answer: +100 pts, grow by 1</span></div>
+        <div class="irow"><div class="idot" style="background:#f87171"></div><span>Wrong answer: shrink by 1</span></div>
+        <div class="irow"><div class="idot" style="background:#fbbf24"></div><span>Speed tier up every 5 correct answers</span></div>
       </div>
-      <button class="btn btn-primary" onclick="startGame()">Start →</button>
+      <div id="homeHS" style="font-size:.82rem;color:var(--muted)"></div>
+      <button class="btn btn-p" onclick="startGame()">Play Now</button>
+      <div class="blink">SPACE to start</div>
     </div>
 
-    <!-- QUESTION -->
     <div id="qScr" class="scr">
-      <div id="qPanel">
-        <div class="q-topic" id="qTopic"></div>
-        <div class="q-text" id="qText"></div>
+      <div id="qp">
+        <div class="qtopic" id="qTop"></div>
+        <div class="qtext" id="qTxt"></div>
         <div class="choices" id="choices"></div>
-        <div class="banner" id="banner"></div>
-        <div class="sol" id="sol"><h4>Worked Solution</h4><div id="solContent"></div></div>
-        <button class="btn btn-primary" id="contBtn" style="display:none" onclick="resume()">Continue →</button>
+        <div class="bnr" id="bnr"></div>
+        <div class="sol" id="sol"><h4>Worked Solution</h4><div id="solC"></div></div>
+        <button class="btn btn-p" id="contBtn" style="display:none">Continue</button>
       </div>
     </div>
 
-    <!-- GAME OVER -->
     <div id="goScr" class="scr">
-      <div class="go-lbl">Game Over</div>
-      <div class="go-score" id="goScore">0</div>
-      <div class="go-lbl">points</div>
+      <div class="golbl">Game Over</div>
+      <div class="goscore" id="goScore">0</div>
+      <div class="golbl">points</div>
+      <div id="nbadge" style="display:none" class="nbadge">New Best!</div>
       <div class="chips" id="goChips"></div>
-      <div class="btn-row" style="margin-top:8px">
-        <button class="btn btn-primary" onclick="startGame()">Play Again</button>
-        <button class="btn btn-ghost" onclick="goHome()">Home</button>
+      <div class="brow" style="margin-top:8px">
+        <button class="btn btn-p" onclick="startGame()">Play Again</button>
+        <button class="btn btn-g" onclick="goHome()">Home</button>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- MOBILE DPAD -->
 <div id="dpad">
-  <button class="dbtn" ontouchstart="sd(0,-1);$e(event)" onclick="sd(0,-1)">↑</button>
+  <button class="db" ontouchstart="sd(0,-1);pe(event)" onclick="sd(0,-1)">↑</button>
   <div class="drow">
-    <button class="dbtn" ontouchstart="sd(-1,0);$e(event)" onclick="sd(-1,0)">←</button>
-    <button class="dbtn blank"></button>
-    <button class="dbtn" ontouchstart="sd(1,0);$e(event)" onclick="sd(1,0)">→</button>
+    <button class="db" ontouchstart="sd(-1,0);pe(event)" onclick="sd(-1,0)">←</button>
+    <button class="db blank"></button>
+    <button class="db" ontouchstart="sd(1,0);pe(event)" onclick="sd(1,0)">→</button>
   </div>
-  <button class="dbtn" ontouchstart="sd(0,1);$e(event)" onclick="sd(0,1)">↓</button>
+  <button class="db" ontouchstart="sd(0,1);pe(event)" onclick="sd(0,1)">↓</button>
 </div>
+
 <script>
-function $e(e){e.preventDefault();}
-// ─── QUESTIONS ───────────────────────────────────────────────
-const QS = [
-  { topic:"Limits", text:"Find \\(\\displaystyle\\lim_{x\\to2}\\frac{x^2-4}{x-2}\\)",
-    ch:["2","4","0","DNE"], ans:1,
-    sol:"<ol><li>Factor: \\((x-2)(x+2)\\)</li><li>Cancel, plug in \\(x=2\\): \\(\\boxed{4}\\)</li></ol>" },
+function pe(e){e.preventDefault();}
 
-  { topic:"L'Hôpital", text:"Find \\(\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}\\)",
-    ch:["0","∞","1","DNE"], ans:2,
-    sol:"<p>\\(\\tfrac{0}{0}\\) form. L'Hôpital: \\(\\frac{\\cos x}{1}\\to\\cos0=\\boxed{1}\\)</p>" },
+// ── QUESTIONS ────────────────────────────────────────────────
+const QS=[
+  {topic:"Limits",text:"Find \\(\\displaystyle\\lim_{x\\to2}\\frac{x^2-4}{x-2}\\)",
+   ch:["2","4","0","DNE"],ans:1,
+   sol:"<ol><li>Factor: \\((x-2)(x+2)\\)</li><li>Cancel, plug in \\(x=2\\): \\(\\boxed{4}\\)</li></ol>"},
 
-  { topic:"Continuity", text:"Is \\(f(x)=\\frac{x^2-9}{x-3}\\) continuous at \\(x=3\\)?",
-    ch:["Yes, f(3)=6","No — removable discontinuity","Yes, f(3)=0","No — jump discontinuity"], ans:1,
-    sol:"<p>\\(f(3)\\) undefined (hole). Removable discontinuity at \\(x=3\\).</p>" },
+  {topic:"L'Hopital",text:"Find \\(\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}\\)",
+   ch:["0","infinity","1","DNE"],ans:2,
+   sol:"<p>0/0 form. L'Hopital: \\(\\frac{\\cos x}{1}\\to\\cos0=\\boxed{1}\\)</p>"},
 
-  { topic:"Power Rule", text:"Find \\(f'(x)\\) for \\(f(x)=4x^3-5x^2+7x-9\\)",
-    ch:["12x²−10x+7","12x²−5x+7","4x²−10x+7","12x³−10x²+7x"], ans:0,
-    sol:"<p>Power rule term by term: \\(f'(x)=12x^2-10x+7\\)</p>" },
+  {topic:"Continuity",text:"Is \\(f(x)=\\frac{x^2-9}{x-3}\\) continuous at \\(x=3\\)?",
+   ch:["Yes, f(3)=6","No, removable discontinuity","Yes, f(3)=0","No, jump discontinuity"],ans:1,
+   sol:"<p>\\(f(3)\\) undefined (hole). Removable discontinuity at \\(x=3\\).</p>"},
 
-  { topic:"Chain Rule", text:"Find \\(f'(x)\\) for \\(f(x)=\\sin(x^2)\\)",
-    ch:["cos(x²)","2x cos(x²)","2x sin(x²)","x cos(x²)"], ans:1,
-    sol:"<p>\\(\\cos(x^2)\\cdot\\frac{d}{dx}[x^2]=\\boxed{2x\\cos(x^2)}\\)</p>" },
+  {topic:"Power Rule",text:"Find \\(f'(x)\\) for \\(f(x)=4x^3-5x^2+7x-9\\)",
+   ch:["12x² - 10x + 7","12x² - 5x + 7","4x² - 10x + 7","12x³ - 10x² + 7x"],ans:0,
+   sol:"<p>Power rule term by term: \\(f'(x)=12x^2-10x+7\\)</p>"},
 
-  { topic:"Product Rule", text:"Find \\(f'(x)\\) for \\(f(x)=x^2 e^x\\)",
-    ch:["2x eˣ","x² eˣ","eˣ(2x+x²)","eˣ(x²−2x)"], ans:2,
-    sol:"<p>\\((uv)'=u'v+uv'\\): \\(2xe^x+x^2e^x=\\boxed{e^x(2x+x^2)}\\)</p>" },
+  {topic:"Chain Rule",text:"Find \\(f'(x)\\) for \\(f(x)=\\sin(x^2)\\)",
+   ch:["cos(x²)","2x cos(x²)","2x sin(x²)","x cos(x²)"],ans:1,
+   sol:"<p>\\(\\cos(x^2)\\cdot2x=\\boxed{2x\\cos(x^2)}\\)</p>"},
 
-  { topic:"Quotient Rule", text:"Find \\(f'(x)\\) for \\(f(x)=\\dfrac{x^2+1}{x-3}\\)",
-    ch:["(2x(x−3)−(x²+1))/(x−3)²","2x","(x²+6x−1)/(x−3)²","(2x(x−3)+(x²+1))/(x−3)²"], ans:0,
-    sol:"<p>\\(\\frac{2x(x-3)-(x^2+1)}{(x-3)^2}=\\frac{x^2-6x-1}{(x-3)^2}\\)</p>" },
+  {topic:"Product Rule",text:"Find \\(f'(x)\\) for \\(f(x)=x^2 e^x\\)",
+   ch:["2x eˣ","x² eˣ","eˣ(2x + x²)","eˣ(x² - 2x)"],ans:2,
+   sol:"<p>\\((uv)'=u'v+uv'\\): \\(2xe^x+x^2e^x=\\boxed{e^x(2x+x^2)}\\)</p>"},
 
-  { topic:"Implicit Diff", text:"Given \\(x^2+y^2=25\\), find \\(\\dfrac{dy}{dx}\\)",
-    ch:["x/y","−x/y","y/x","−y/x"], ans:1,
-    sol:"<p>\\(2x+2y\\frac{dy}{dx}=0\\Rightarrow\\frac{dy}{dx}=\\boxed{-\\frac{x}{y}}\\)</p>" },
+  {topic:"Quotient Rule",text:"Find \\(f'(x)\\) for \\(f(x)=\\dfrac{x^2+1}{x-3}\\)",
+   ch:["(2x(x-3) - (x²+1)) / (x-3)²","2x","(x² + 6x - 1) / (x-3)²","(2x(x-3) + (x²+1)) / (x-3)²"],ans:0,
+   sol:"<p>\\(\\frac{2x(x-3)-(x^2+1)}{(x-3)^2}=\\frac{x^2-6x-1}{(x-3)^2}\\)</p>"},
 
-  { topic:"Tangent Line", text:"Tangent to \\(f(x)=x^2+3x\\) at \\(x=2\\)?",
-    ch:["y=7x−4","y=7x+4","y=4x−7","y=7x−10"], ans:0,
-    sol:"<p>\\(f(2)=10\\), \\(f'(2)=7\\). Point-slope: \\(y=7x-4\\)</p>" },
+  {topic:"Implicit Diff",text:"Given \\(x^2+y^2=25\\), find \\(\\dfrac{dy}{dx}\\)",
+   ch:["x/y","-x/y","y/x","-y/x"],ans:1,
+   sol:"<p>\\(2x+2y\\frac{dy}{dx}=0\\Rightarrow\\frac{dy}{dx}=\\boxed{-\\frac{x}{y}}\\)</p>"},
 
-  { topic:"Critical Points", text:"Critical points of \\(f(x)=x^3-6x^2+9x\\)?",
-    ch:["x=0,3","x=1,3","x=−1,3","x=2,4"], ans:1,
-    sol:"<p>\\(f'=3(x-1)(x-3)=0\\Rightarrow x=1,\\,x=3\\)</p>" },
+  {topic:"Tangent Line",text:"Tangent to \\(f(x)=x^2+3x\\) at \\(x=2\\)?",
+   ch:["y = 7x - 4","y = 7x + 4","y = 4x - 7","y = 7x - 10"],ans:0,
+   sol:"<p>\\(f(2)=10\\), \\(f'(2)=7\\). Point-slope: \\(y=7x-4\\)</p>"},
 
-  { topic:"Optimization", text:"Rectangle, perimeter 40. Dimensions for max area?",
-    ch:["5×15","10×10","8×12","4×16"], ans:1,
-    sol:"<p>\\(A=x(20-x),\\;A'=20-2x=0\\Rightarrow x=10\\). Square \\(\\boxed{10\\times10}\\)</p>" },
+  {topic:"Critical Points",text:"Critical points of \\(f(x)=x^3-6x^2+9x\\)?",
+   ch:["x = 0 and 3","x = 1 and 3","x = -1 and 3","x = 2 and 4"],ans:1,
+   sol:"<p>\\(f'=3(x-1)(x-3)=0\\Rightarrow x=1,\\,x=3\\)</p>"},
 
-  { topic:"Related Rates", text:"Circle radius grows 3 cm/s. Rate of area change at \\(r=5\\)?",
-    ch:["15π","30π","25π","10π"], ans:1,
-    sol:"<p>\\(\\frac{dA}{dt}=2\\pi r\\frac{dr}{dt}=2\\pi(5)(3)=\\boxed{30\\pi}\\) cm²/s</p>" },
+  {topic:"Optimization",text:"Rectangle, perimeter 40. Dimensions for max area?",
+   ch:["5 x 15","10 x 10","8 x 12","4 x 16"],ans:1,
+   sol:"<p>\\(A=x(20-x),\\;A'=20-2x=0\\Rightarrow x=10\\). Square \\(\\boxed{10\\times10}\\)</p>"},
 
-  { topic:"Definite Integral", text:"Evaluate \\(\\displaystyle\\int_0^3 x^2\\,dx\\)",
-    ch:["9","27","3","6"], ans:0,
-    sol:"<p>\\(\\left[\\frac{x^3}{3}\\right]_0^3=\\frac{27}{3}=\\boxed{9}\\)</p>" },
+  {topic:"Related Rates",text:"Circle radius grows 3 cm/s. Rate of area change at \\(r=5\\)?",
+   ch:["15pi","30pi","25pi","10pi"],ans:1,
+   sol:"<p>\\(\\frac{dA}{dt}=2\\pi r\\frac{dr}{dt}=2\\pi(5)(3)=\\boxed{30\\pi}\\) cm²/s</p>"},
 
-  { topic:"U-Substitution", text:"Evaluate \\(\\displaystyle\\int 2x(x^2+1)^4\\,dx\\)",
-    ch:["(x²+1)⁵+C","(x²+1)⁵/5+C","2(x²+1)⁵+C","(x²+1)⁴/4+C"], ans:1,
-    sol:"<p>Let \\(u=x^2+1\\), \\(du=2x\\,dx\\): \\(\\int u^4\\,du=\\boxed{\\frac{(x^2+1)^5}{5}+C}\\)</p>" },
+  {topic:"Definite Integral",text:"Evaluate \\(\\displaystyle\\int_0^3 x^2\\,dx\\)",
+   ch:["9","27","3","6"],ans:0,
+   sol:"<p>\\(\\left[\\frac{x^3}{3}\\right]_0^3=\\frac{27}{3}=\\boxed{9}\\)</p>"},
 
-  { topic:"Area Between Curves", text:"Area between \\(y=x\\) and \\(y=x^2\\), \\(0\\le x\\le1\\)",
-    ch:["1/6","1/3","1/2","1/4"], ans:0,
-    sol:"<p>\\(\\int_0^1(x-x^2)\\,dx=\\left[\\frac{x^2}{2}-\\frac{x^3}{3}\\right]_0^1=\\frac{1}{2}-\\frac{1}{3}=\\boxed{\\frac{1}{6}}\\)</p>" },
+  {topic:"U-Substitution",text:"Evaluate \\(\\displaystyle\\int 2x(x^2+1)^4\\,dx\\)",
+   ch:["(x²+1)⁵ + C","(x²+1)⁵/5 + C","2(x²+1)⁵ + C","(x²+1)⁴/4 + C"],ans:1,
+   sol:"<p>Let \\(u=x^2+1\\), \\(du=2x\\,dx\\): \\(\\int u^4\\,du=\\boxed{\\frac{(x^2+1)^5}{5}+C}\\)</p>"},
 
-  { topic:"Disk Method", text:"Volume rotating \\(y=x\\) on \\([0,2]\\) about the x-axis",
-    ch:["4π/3","8π/3","4π","2π"], ans:1,
-    sol:"<p>\\(\\pi\\int_0^2 x^2\\,dx=\\pi\\left[\\frac{x^3}{3}\\right]_0^2=\\boxed{\\frac{8\\pi}{3}}\\)</p>" },
+  {topic:"Area / Curves",text:"Area between \\(y=x\\) and \\(y=x^2\\), \\(0\\le x\\le1\\)",
+   ch:["1/6","1/3","1/2","1/4"],ans:0,
+   sol:"<p>\\(\\int_0^1(x-x^2)\\,dx=\\frac{1}{2}-\\frac{1}{3}=\\boxed{\\frac{1}{6}}\\)</p>"},
 
-  { topic:"Diff Eq", text:"Solve \\(\\frac{dy}{dx}=3x^2\\) with \\(y(1)=5\\)",
-    ch:["y=x³+4","y=3x³+2","y=x³+5","y=3x²+2"], ans:0,
-    sol:"<p>\\(y=x^3+C\\). \\(y(1)=5\\Rightarrow C=4\\). \\(\\boxed{y=x^3+4}\\)</p>" },
+  {topic:"Disk Method",text:"Volume rotating \\(y=x\\) on \\([0,2]\\) about the x-axis",
+   ch:["4pi/3","8pi/3","4pi","2pi"],ans:1,
+   sol:"<p>\\(\\pi\\int_0^2 x^2\\,dx=\\pi\\cdot\\frac{8}{3}=\\boxed{\\frac{8\\pi}{3}}\\)</p>"},
 
-  { topic:"Geometric Series", text:"Does \\(1+\\tfrac12+\\tfrac14+\\cdots\\) converge? Sum?",
-    ch:["Diverges","Converges to 1","Converges to 2","Converges to 3"], ans:2,
-    sol:"<p>Geometric, \\(|r|=\\frac12<1\\). \\(S=\\frac{1}{1-1/2}=\\boxed{2}\\)</p>" },
+  {topic:"Diff Eq",text:"Solve \\(\\frac{dy}{dx}=3x^2\\) with \\(y(1)=5\\)",
+   ch:["y = x³ + 4","y = 3x³ + 2","y = x³ + 5","y = 3x² + 2"],ans:0,
+   sol:"<p>\\(y=x^3+C\\). \\(y(1)=5\\Rightarrow C=4\\). \\(\\boxed{y=x^3+4}\\)</p>"},
 
-  { topic:"Maclaurin Series", text:"First four terms of Maclaurin series for \\(e^x\\)?",
-    ch:["1+x+x²/2!+x³/3!","x+x³/3!+x⁵/5!…","1−x+x²/2!−x³/3!","1+x+x²+x³"], ans:0,
-    sol:"<p>\\(e^x=\\sum\\frac{x^n}{n!}\\): \\(\\boxed{1+x+\\frac{x^2}{2}+\\frac{x^3}{6}}\\)</p>" },
+  {topic:"Geo Series",text:"Does \\(1+\\tfrac12+\\tfrac14+\\cdots\\) converge? Sum?",
+   ch:["Diverges","Converges to 1","Converges to 2","Converges to 3"],ans:2,
+   sol:"<p>Geometric, \\(|r|=\\frac12<1\\). \\(S=\\frac{1}{1-1/2}=\\boxed{2}\\)</p>"},
 
-  { topic:"Ratio Test", text:"Does \\(\\displaystyle\\sum_{n=1}^{\\infty}\\frac{n!}{5^n}\\) converge?",
-    ch:["Converges","Diverges","Inconclusive","Conditionally converges"], ans:1,
-    sol:"<p>\\(L=\\lim\\frac{n+1}{5}=\\infty>1\\). Diverges.</p>" },
+  {topic:"Maclaurin",text:"First four terms of Maclaurin series for \\(e^x\\)?",
+   ch:["1 + x + x²/2! + x³/3!","x + x³/3! + x⁵/5! ...","1 - x + x²/2! - x³/3!","1 + x + x² + x³"],ans:0,
+   sol:"<p>\\(e^x=\\sum\\frac{x^n}{n!}\\): \\(\\boxed{1+x+\\frac{x^2}{2}+\\frac{x^3}{6}}\\)</p>"},
 
-  { topic:"Parametric", text:"Given \\(x=t^2,\\,y=t^3\\), find \\(\\frac{dy}{dx}\\)",
-    ch:["3t/2","2t/3","3t²/2","t/2"], ans:0,
-    sol:"<p>\\(\\frac{dy/dt}{dx/dt}=\\frac{3t^2}{2t}=\\boxed{\\frac{3t}{2}}\\)</p>" },
+  {topic:"Ratio Test",text:"Does \\(\\displaystyle\\sum_{n=1}^{\\infty}\\frac{n!}{5^n}\\) converge?",
+   ch:["Converges","Diverges","Inconclusive","Conditionally converges"],ans:1,
+   sol:"<p>\\(L=\\lim\\frac{n+1}{5}=\\infty>1\\). Diverges.</p>"},
 
-  { topic:"Polar Area", text:"Area inside \\(r=2\\) from \\(\\theta=0\\) to \\(\\theta=\\pi\\)",
-    ch:["2π","4π","π","8π"], ans:0,
-    sol:"<p>\\(A=\\frac12\\int_0^\\pi 4\\,d\\theta=\\frac12\\cdot4\\pi=\\boxed{2\\pi}\\)</p>" }
+  {topic:"Parametric",text:"Given \\(x=t^2,\\,y=t^3\\), find \\(\\frac{dy}{dx}\\)",
+   ch:["3t/2","2t/3","3t²/2","t/2"],ans:0,
+   sol:"<p>\\(\\frac{dy/dt}{dx/dt}=\\frac{3t^2}{2t}=\\boxed{\\frac{3t}{2}}\\)</p>"},
+
+  {topic:"Polar Area",text:"Area inside \\(r=2\\) from \\(\\theta=0\\) to \\(\\theta=\\pi\\)",
+   ch:["2pi","4pi","pi","8pi"],ans:0,
+   sol:"<p>\\(A=\\frac12\\int_0^\\pi 4\\,d\\theta=\\frac12\\cdot4\\pi=\\boxed{2\\pi}\\)</p>"}
 ];
 
-// ─── CANVAS SETUP ────────────────────────────────────────────
-const canvas = document.getElementById('game');
-const ctx    = canvas.getContext('2d');
-const CELL   = 20;
-const COLS   = canvas.width  / CELL;  // 28
-const ROWS   = canvas.height / CELL;  // 28
-const SPEEDS = [165, 135, 108, 85, 68];
-
-// ─── STATE ───────────────────────────────────────────────────
-let snake, dir, nextDir, food, score, correctCount, speedTier;
-let pendingGrow, qAnswered, gameState, loopId, rafId;
-const usedQs = new Set();
-
-function initState() {
-  const mx = Math.floor(COLS/2), my = Math.floor(ROWS/2);
-  snake       = [{x:mx,y:my},{x:mx-1,y:my},{x:mx-2,y:my}];
-  dir         = {dx:1,dy:0};
-  nextDir     = {dx:1,dy:0};
-  food        = null;
-  score       = 0;
-  correctCount= 0;
-  speedTier   = 0;
-  pendingGrow = 0;
-  qAnswered   = false;
-  usedQs.clear();
-  hudUpdate();
+// ── TOPIC COLORS ─────────────────────────────────────────────
+const TC={
+  "Limits":"#60a5fa","L'Hopital":"#a78bfa","Continuity":"#34d399",
+  "Power Rule":"#fb923c","Chain Rule":"#f472b6","Product Rule":"#fbbf24",
+  "Quotient Rule":"#a78bfa","Implicit Diff":"#60a5fa","Tangent Line":"#34d399",
+  "Critical Points":"#fb923c","Optimization":"#f472b6","Related Rates":"#fbbf24",
+  "Definite Integral":"#60a5fa","U-Substitution":"#a78bfa","Area / Curves":"#34d399",
+  "Disk Method":"#fb923c","Diff Eq":"#f472b6","Geo Series":"#fbbf24",
+  "Maclaurin":"#60a5fa","Ratio Test":"#a78bfa","Parametric":"#34d399","Polar Area":"#fb923c"
+};
+function tc(t){return TC[t]||"#7c6af7";}
+function h2r(h){
+  return`${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;
 }
 
-// ─── GAME LOOP ────────────────────────────────────────────────
-function startGame() {
-  initState();
-  overlayShow('');
-  gameState = 'play';
-  spawnFood();
-  clearInterval(loopId);
-  loopId = setInterval(tick, SPEEDS[speedTier]);
+// Tier colors: [headHex, bodyRgb]
+const TIERS=[
+  ["#c4b5fd","167,139,250"],
+  ["#93c5fd","59,130,246"],
+  ["#6ee7b7","16,185,129"],
+  ["#fde68a","234,179,8"],
+  ["#fca5a5","239,68,68"]
+];
+
+// ── CANVAS ───────────────────────────────────────────────────
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+const CELL=20,COLS=28,ROWS=28,W=560,H=560;
+const SPEEDS=[165,135,108,85,68];
+
+// ── STATE ────────────────────────────────────────────────────
+let snake,dir,nextDir,food,score,correct,tier,streak;
+let grow,qDone,gState,loopId,rafId;
+let parts=[],floats=[],dflash=0;
+const used=new Set();
+
+function reset(){
+  snake=[{x:14,y:14},{x:13,y:14},{x:12,y:14}];
+  dir={dx:1,dy:0};nextDir={dx:1,dy:0};
+  food=null;score=0;correct=0;tier=0;streak=0;
+  grow=0;qDone=false;parts=[];floats=[];dflash=0;
+  used.clear();hudUp();
+}
+
+// ── LOOP ─────────────────────────────────────────────────────
+function startGame(){
+  reset();showOv("");gState="play";spawnFood();
+  clearInterval(loopId);loopId=setInterval(tick,SPEEDS[tier]);
   cancelAnimationFrame(rafId);
-  (function raf(){ draw(); rafId = requestAnimationFrame(raf); })();
+  (function r(){draw();rafId=requestAnimationFrame(r);})();
 }
 
-function tick() {
-  if (gameState !== 'play') return;
-  dir = nextDir;
-  const h = {x: snake[0].x + dir.dx, y: snake[0].y + dir.dy};
-
-  if (h.x < 0 || h.x >= COLS || h.y < 0 || h.y >= ROWS) { die(); return; }
-  if (snake.slice(0,-1).some(s => s.x===h.x && s.y===h.y)) { die(); return; }
-
+function tick(){
+  if(gState!=="play")return;
+  dir=nextDir;
+  const h={x:snake[0].x+dir.dx,y:snake[0].y+dir.dy};
+  if(h.x<0||h.x>=COLS||h.y<0||h.y>=ROWS){die();return;}
+  if(snake.slice(0,-1).some(s=>s.x===h.x&&s.y===h.y)){die();return;}
   snake.unshift(h);
-
-  if (food && h.x===food.x && h.y===food.y) {
-    const qi = food.qi;
-    food = null;
-    snake.pop();           // keep length the same until answer
-    gameState = 'q';
-    showQ(qi);
+  if(food&&h.x===food.x&&h.y===food.y){
+    const qi=food.qi,fx=food.x,fy=food.y;
+    food=null;snake.pop();gState="q";
+    showQ(qi,fx,fy);
   } else {
-    if (pendingGrow > 0) { pendingGrow--; }
-    else { snake.pop(); }
+    grow>0?grow--:snake.pop();
   }
-  hudUpdate();
+  hudUp();
 }
 
-// ─── QUESTION ────────────────────────────────────────────────
-function showQ(qi) {
-  clearInterval(loopId);
-  overlayShow('q');
-  qAnswered = false;
-
-  const q = QS[qi];
-  document.getElementById('qTopic').textContent = q.topic.toUpperCase();
-  document.getElementById('qText').innerHTML    = q.text;
-  document.getElementById('banner').className   = 'banner';
-  document.getElementById('sol').className      = 'sol';
-  document.getElementById('contBtn').style.display = 'none';
-
-  const cont = document.getElementById('choices');
-  cont.innerHTML = '';
-  ['A','B','C','D'].forEach((L,i) => {
-    const b = document.createElement('button');
-    b.className = 'cbtn';
-    b.innerHTML = `<span class="ltr">${L}</span><span>${q.ch[i]}</span>`;
-    b.onclick = () => pickAns(i, qi);
-    cont.appendChild(b);
+// ── QUESTION ─────────────────────────────────────────────────
+function showQ(qi,fx,fy){
+  clearInterval(loopId);showOv("q");qDone=false;
+  const q=QS[qi];
+  const col=tc(q.topic);
+  document.getElementById("qp").style.setProperty("--tc",col);
+  document.getElementById("qTop").textContent=q.topic.toUpperCase();
+  document.getElementById("qTxt").innerHTML=q.text;
+  document.getElementById("bnr").className="bnr";
+  document.getElementById("sol").className="sol";
+  document.getElementById("contBtn").style.display="none";
+  const box=document.getElementById("choices");
+  box.innerHTML="";
+  ["A","B","C","D"].forEach((L,i)=>{
+    const b=document.createElement("button");
+    b.className="cb";
+    b.innerHTML=`<span class="lt">${L}</span><span>${q.ch[i]}</span>`;
+    b.onclick=()=>pick(i,qi,fx,fy);
+    box.appendChild(b);
   });
-  setTimeout(renderAllMath, 60);
+  setTimeout(renderAllMath,60);
 }
 
-function pickAns(idx, qi) {
-  if (qAnswered) return;
-  qAnswered = true;
-
-  const q = QS[qi];
-  const ok = idx === q.ans;
-
-  document.querySelectorAll('.cbtn').forEach((b,i) => {
-    b.disabled = true;
-    if (i === q.ans)              b.classList.add('ok');
-    else if (i === idx && !ok)    b.classList.add('no');
+function pick(idx,qi,fx,fy){
+  if(qDone)return;qDone=true;
+  const q=QS[qi];const ok=idx===q.ans;
+  const px=fx*CELL+CELL/2,py=fy*CELL+CELL/2;
+  document.querySelectorAll(".cb").forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans)b.classList.add("ok");
+    else if(i===idx&&!ok)b.classList.add("no");
   });
-
-  const ban  = document.getElementById('banner');
-  const cont = document.getElementById('contBtn');
-
-  if (ok) {
-    score += 100;
-    correctCount++;
-    pendingGrow = 1;
-    const newTier = Math.min(Math.floor(correctCount/5), SPEEDS.length-1);
-    speedTier = newTier;
-    ban.textContent = `✓ Correct! +100 pts — you grow! (Speed ×${speedTier+1})`;
-    ban.className = 'banner on c';
-    cont.textContent = 'Continue →';
-    cont.onclick = resume;
+  const bnr=document.getElementById("bnr");
+  const cont=document.getElementById("contBtn");
+  if(ok){
+    score+=100;correct++;streak++;grow=1;
+    tier=Math.min(Math.floor(correct/5),SPEEDS.length-1);
+    spawnParts(px,py,14,tc(q.topic));
+    addFloat(px,py,"+100","#34d399");
+    if(streak>=3)addFloat(px,py-26,`STREAK x${streak}!`,"#fbbf24");
+    bnr.textContent=streak>=3
+      ?`Correct! +100 pts  |  Streak x${streak}!  |  Speed x${tier+1}`
+      :`Correct! +100 pts, you grow! (Speed x${tier+1})`;
+    bnr.className="bnr on c";
+    cont.textContent="Continue";cont.onclick=resume;
   } else {
-    if (snake.length <= 1) {
-      ban.textContent = '✗ Incorrect — no segments left. Game Over!';
-      ban.className = 'banner on w';
-      cont.textContent = 'See Score';
-      cont.onclick = die;
+    streak=0;
+    spawnParts(px,py,10,"#f87171");
+    addFloat(px,py,"WRONG","#f87171");
+    if(snake.length<=1){
+      bnr.textContent="Incorrect, no segments left. Game Over!";
+      bnr.className="bnr on w";
+      cont.textContent="See Score";cont.onclick=die;
     } else {
       snake.pop();
-      ban.textContent = `✗ Incorrect — you shrink! (${snake.length} left)`;
-      ban.className = 'banner on w';
-      cont.textContent = 'Continue →';
-      cont.onclick = resume;
+      bnr.textContent=`Incorrect, you shrink! (${snake.length} left)`;
+      bnr.className="bnr on w";
+      cont.textContent="Continue";cont.onclick=resume;
     }
   }
-
-  document.getElementById('solContent').innerHTML = q.sol;
-  document.getElementById('sol').className = 'sol on';
-  cont.style.display = 'block';
-  hudUpdate();
-  setTimeout(renderAllMath, 60);
+  document.getElementById("solC").innerHTML=q.sol;
+  document.getElementById("sol").className="sol on";
+  cont.style.display="block";
+  hudUp();setTimeout(renderAllMath,60);
 }
 
-function resume() {
-  if (gameState === 'dead') return;
-  overlayShow('');
-  gameState = 'play';
-  spawnFood();
-  clearInterval(loopId);
-  loopId = setInterval(tick, SPEEDS[speedTier]);
+function resume(){
+  if(gState==="dead")return;
+  showOv("");gState="play";spawnFood();
+  clearInterval(loopId);loopId=setInterval(tick,SPEEDS[tier]);
 }
 
-// ─── GAME OVER ────────────────────────────────────────────────
-function die() {
-  gameState = 'dead';
-  clearInterval(loopId);
-
-  const best = +localStorage.getItem('igBest') || 0;
-  if (score > best) localStorage.setItem('igBest', score);
-  bestUpdate();
-
-  document.getElementById('goScore').textContent = score;
-  document.getElementById('goChips').innerHTML = `
+// ── GAME OVER ────────────────────────────────────────────────
+function die(){
+  gState="dead";clearInterval(loopId);dflash=1;
+  const best=+localStorage.getItem("igBest")||0;
+  const isNew=score>best;
+  if(isNew)localStorage.setItem("igBest",score);
+  bestUp();
+  document.getElementById("goScore").textContent=score;
+  document.getElementById("nbadge").style.display=isNew?"inline-block":"none";
+  document.getElementById("goChips").innerHTML=`
     <div class="chip">Length <strong>${snake.length}</strong></div>
-    <div class="chip">Correct <strong>${correctCount}</strong></div>
-    <div class="chip">Speed <strong>×${speedTier+1}</strong></div>
+    <div class="chip">Correct <strong>${correct}</strong></div>
+    <div class="chip">Streak <strong>${streak}</strong></div>
+    <div class="chip">Speed <strong>x${tier+1}</strong></div>
     <div class="chip">Best <strong>${Math.max(score,best)}</strong></div>`;
-  overlayShow('go');
+  showOv("go");
+}
+function goHome(){gState="home";clearInterval(loopId);showOv("home");}
+
+// ── FOOD ─────────────────────────────────────────────────────
+function spawnFood(){
+  if(used.size>=QS.length)used.clear();
+  let qi;do{qi=Math.floor(Math.random()*QS.length);}while(used.has(qi));
+  used.add(qi);
+  let p;
+  do{p={x:Math.floor(Math.random()*COLS),y:Math.floor(Math.random()*ROWS)};}
+  while(snake.some(s=>s.x===p.x&&s.y===p.y));
+  food={...p,qi};
 }
 
-function goHome() {
-  gameState = 'home';
-  clearInterval(loopId);
-  overlayShow('home');
+// ── EFFECTS ──────────────────────────────────────────────────
+function spawnParts(x,y,n,col){
+  for(let i=0;i<n;i++){
+    const a=(Math.PI*2*i/n)+(Math.random()-.5)*.7;
+    const sp=1.6+Math.random()*3.2;
+    parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+      life:1,decay:.026+Math.random()*.024,col,r:2+Math.random()*2.5});
+  }
+  if(parts.length>140)parts.splice(0,parts.length-140);
+}
+function addFloat(x,y,txt,col){
+  floats.push({x,y,txt,col,life:1,vy:-1.3});
+  if(floats.length>10)floats.shift();
 }
 
-// ─── FOOD ─────────────────────────────────────────────────────
-function spawnFood() {
-  if (usedQs.size >= QS.length) usedQs.clear();
-  let qi;
-  do { qi = Math.floor(Math.random() * QS.length); } while (usedQs.has(qi));
-  usedQs.add(qi);
-
-  let pos;
-  do { pos = {x:Math.floor(Math.random()*COLS), y:Math.floor(Math.random()*ROWS)}; }
-  while (snake.some(s => s.x===pos.x && s.y===pos.y));
-
-  food = {...pos, qi};
-}
-
-// ─── INPUT ────────────────────────────────────────────────────
-const KEYMAP = {
-  ArrowUp:{dx:0,dy:-1},ArrowDown:{dx:0,dy:1},
+// ── INPUT ────────────────────────────────────────────────────
+const KM={ArrowUp:{dx:0,dy:-1},ArrowDown:{dx:0,dy:1},
   ArrowLeft:{dx:-1,dy:0},ArrowRight:{dx:1,dy:0},
-  w:{dx:0,dy:-1},s:{dx:0,dy:1},a:{dx:-1,dy:0},d:{dx:1,dy:0}
-};
-document.addEventListener('keydown', e => {
-  const d = KEYMAP[e.key];
-  if (!d) return;
-  if (d.dx !== -dir.dx || d.dy !== -dir.dy) nextDir = d;
-  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+  w:{dx:0,dy:-1},s:{dx:0,dy:1},a:{dx:-1,dy:0},d:{dx:1,dy:0}};
+document.addEventListener("keydown",e=>{
+  if(e.key===" "&&(gState==="home"||gState==="dead")){startGame();e.preventDefault();return;}
+  const d=KM[e.key];if(!d||!dir)return;
+  if(d.dx!== -dir.dx||d.dy!== -dir.dy)nextDir=d;
+  if(e.key.startsWith("Arrow"))e.preventDefault();
+});
+function sd(dx,dy){if(dir&&(dx!== -dir.dx||dy!== -dir.dy))nextDir={dx,dy};}
+let tx0,ty0;
+canvas.addEventListener("touchstart",e=>{tx0=e.touches[0].clientX;ty0=e.touches[0].clientY;},{passive:true});
+canvas.addEventListener("touchend",e=>{
+  const dx=e.changedTouches[0].clientX-tx0,dy=e.changedTouches[0].clientY-ty0;
+  Math.abs(dx)>Math.abs(dy)?sd(dx>0?1:-1,0):sd(0,dy>0?1:-1);
 });
 
-function sd(dx,dy) { if (dx !== -dir.dx || dy !== -dir.dy) nextDir = {dx,dy}; }
-
-// touch swipe on canvas
-let tx0, ty0;
-canvas.addEventListener('touchstart', e => { tx0=e.touches[0].clientX; ty0=e.touches[0].clientY; }, {passive:true});
-canvas.addEventListener('touchend',   e => {
-  const dx = e.changedTouches[0].clientX - tx0;
-  const dy = e.changedTouches[0].clientY - ty0;
-  if (Math.abs(dx)>Math.abs(dy)) sd(dx>0?1:-1,0);
-  else sd(0,dy>0?1:-1);
-});
-
-// ─── HUD ──────────────────────────────────────────────────────
-function hudUpdate() {
-  document.getElementById('hScore').textContent = score;
-  document.getElementById('hLen').textContent   = snake ? snake.length : 3;
-  document.getElementById('hSpeed').textContent = `Speed ×${speedTier+1}`;
+// ── HUD ──────────────────────────────────────────────────────
+function hudUp(){
+  const el=document.getElementById("hScore");
+  el.textContent=score;el.classList.remove("pop");
+  void el.offsetWidth;el.classList.add("pop");
+  document.getElementById("hLen").textContent=snake?snake.length:3;
+  document.getElementById("hSpd").textContent=`x${tier+1}`;
+  const se=document.getElementById("hStrk");
+  se.textContent=streak;
+  se.style.color=streak>=3?"var(--gold)":streak>0?"var(--correct)":"var(--muted)";
 }
-function bestUpdate() {
-  const b = localStorage.getItem('igBest');
-  document.getElementById('hBest').textContent = b || '—';
+function bestUp(){
+  const b=localStorage.getItem("igBest")||"0";
+  document.getElementById("hBest").textContent=b;
+  const hh=document.getElementById("homeHS");
+  if(hh)hh.innerHTML=+b>0?`Best: <strong style="color:var(--gold)">${b}</strong>`:"";
 }
 
-// ─── OVERLAY ──────────────────────────────────────────────────
-function overlayShow(which) {
-  const ov = document.getElementById('overlay');
-  const map = {home:'homeScr', q:'qScr', go:'goScr'};
-  if (!which) { ov.classList.remove('on'); Object.values(map).forEach(id=>document.getElementById(id).classList.remove('on')); return; }
-  ov.classList.add('on');
-  Object.entries(map).forEach(([k,id]) => document.getElementById(id).classList.toggle('on', k===which));
+// ── OVERLAY ──────────────────────────────────────────────────
+function showOv(w){
+  const ov=document.getElementById("ov");
+  const m={home:"homeScr",q:"qScr",go:"goScr"};
+  if(!w){ov.classList.remove("on");Object.values(m).forEach(id=>document.getElementById(id).classList.remove("on"));return;}
+  ov.classList.add("on");
+  Object.entries(m).forEach(([k,id])=>document.getElementById(id).classList.toggle("on",k===w));
 }
 
-// ─── DRAW ─────────────────────────────────────────────────────
-function draw() {
-  const W=canvas.width, H=canvas.height;
+// ── DRAW ─────────────────────────────────────────────────────
+function draw(){
+  // Background radial gradient
+  const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*.78);
+  bg.addColorStop(0,"#141627");bg.addColorStop(1,"#080910");
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
 
-  ctx.fillStyle='#0f1117';
-  ctx.fillRect(0,0,W,H);
-
-  // grid
-  ctx.strokeStyle='#13162a'; ctx.lineWidth=.5;
+  // Minor grid lines
+  ctx.strokeStyle="#0e1028";ctx.lineWidth=.5;
   for(let c=0;c<=COLS;c++){ctx.beginPath();ctx.moveTo(c*CELL,0);ctx.lineTo(c*CELL,H);ctx.stroke();}
   for(let r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*CELL);ctx.lineTo(W,r*CELL);ctx.stroke();}
 
-  // axes
-  ctx.strokeStyle='#1e2240'; ctx.lineWidth=1;
-  const ax=Math.floor(COLS/2)*CELL, ay=Math.floor(ROWS/2)*CELL;
+  // Major grid (every 5 cells)
+  ctx.strokeStyle="#171b38";ctx.lineWidth=.9;
+  for(let c=0;c<=COLS;c+=5){ctx.beginPath();ctx.moveTo(c*CELL,0);ctx.lineTo(c*CELL,H);ctx.stroke();}
+  for(let r=0;r<=ROWS;r+=5){ctx.beginPath();ctx.moveTo(0,r*CELL);ctx.lineTo(W,r*CELL);ctx.stroke();}
+
+  // Axes
+  const ax=14*CELL,ay=14*CELL;
+  ctx.strokeStyle="#1e2245";ctx.lineWidth=1.5;
   ctx.beginPath();ctx.moveTo(ax,0);ctx.lineTo(ax,H);ctx.stroke();
   ctx.beginPath();ctx.moveTo(0,ay);ctx.lineTo(W,ay);ctx.stroke();
 
-  if (!snake || !snake.length) return;
+  // Coordinate labels
+  ctx.fillStyle="#1b2050";ctx.font="9px monospace";
+  ctx.textAlign="center";ctx.textBaseline="top";
+  [4,9,19,24].forEach(c=>{
+    if(c*CELL+CELL/2===ax)return;
+    ctx.fillText(c-14,c*CELL+CELL/2,ay+5);
+  });
+  ctx.textAlign="right";ctx.textBaseline="middle";
+  [4,9,19,24].forEach(r=>{
+    if(r*CELL+CELL/2===ay)return;
+    ctx.fillText(14-r,ax-5,r*CELL+CELL/2);
+  });
 
-  // food
-  if (food) {
-    const fx=food.x*CELL+CELL/2, fy=food.y*CELL+CELL/2;
-    const p=.65+.35*Math.sin(Date.now()/350);
-    const gr=ctx.createRadialGradient(fx,fy,0,fx,fy,CELL*1.4);
-    gr.addColorStop(0,`rgba(251,191,36,${p*.55})`);
-    gr.addColorStop(1,'rgba(251,191,36,0)');
-    ctx.fillStyle=gr;ctx.beginPath();ctx.arc(fx,fy,CELL*1.4,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(fx,fy,CELL/2-1,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#1a0f00';ctx.font=`bold ${CELL*.6}px monospace`;
-    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('?',fx,fy);
+  // Animated curves visible through overlay
+  if(gState!=="play"){
+    const t=Date.now()/2800;
+    [[`rgba(124,106,247,.1)`,2,55,55,1],[`rgba(251,191,36,.07)`,1.5,35,42,1.3],[`rgba(52,211,153,.07)`,1,28,38,.85]]
+      .forEach(([col,lw,amp,freq,spd],vi)=>{
+        ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.beginPath();
+        const base=vi===0?H/2:vi===1?H*.33:H*.66;
+        for(let x=0;x<=W;x+=2){
+          const y=base+amp*Math.sin(x/freq+t*spd*(vi%2===0?1:-1));
+          x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+        }
+        ctx.stroke();
+      });
   }
 
-  // body line
-  if (snake.length > 1) {
-    const h=snake[0], t=snake[snake.length-1];
-    const gr=ctx.createLinearGradient(h.x*CELL+CELL/2,h.y*CELL+CELL/2,t.x*CELL+CELL/2,t.y*CELL+CELL/2);
-    gr.addColorStop(0,'rgba(167,139,250,.9)');
-    gr.addColorStop(1,'rgba(100,80,220,.1)');
+  if(!snake||!snake.length)return;
+
+  // Update particles
+  parts=parts.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.09;p.life-=p.decay;return p.life>0;});
+  floats=floats.filter(f=>{f.y+=f.vy;f.life-=.02;return f.life>0;});
+
+  // Food
+  if(food){
+    const q=QS[food.qi];
+    const fx=food.x*CELL+CELL/2,fy=food.y*CELL+CELL/2;
+    const col=tc(q.topic),rgb=h2r(col);
+    const pu=.6+.4*Math.sin(Date.now()/380);
+    const orb=Date.now()/700;
+
+    // Outer glow
+    const grd=ctx.createRadialGradient(fx,fy,0,fx,fy,CELL*1.7);
+    grd.addColorStop(0,`rgba(${rgb},${pu*.42})`);
+    grd.addColorStop(1,`rgba(${rgb},0)`);
+    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(fx,fy,CELL*1.7,0,Math.PI*2);ctx.fill();
+
+    // Orbiting arc
+    ctx.strokeStyle=`rgba(${rgb},.65)`;ctx.lineWidth=1.8;
+    ctx.beginPath();ctx.arc(fx,fy,CELL*.9,orb,orb+Math.PI*1.35);ctx.stroke();
+    // Second arc offset
+    ctx.strokeStyle=`rgba(${rgb},.3)`;ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(fx,fy,CELL*.9,orb+Math.PI,orb+Math.PI*2.2);ctx.stroke();
+
+    // Outer ring
+    ctx.strokeStyle=`rgba(${rgb},.2)`;ctx.lineWidth=.8;
+    ctx.beginPath();ctx.arc(fx,fy,CELL*.9,0,Math.PI*2);ctx.stroke();
+
+    // Filled circle
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(fx,fy,CELL/2-1,0,Math.PI*2);ctx.fill();
+    // Dark inset
+    ctx.fillStyle="rgba(8,6,20,.82)";ctx.beginPath();ctx.arc(fx,fy,CELL/2-3,0,Math.PI*2);ctx.fill();
+    // Question mark
+    ctx.fillStyle=col;ctx.font=`bold ${CELL*.57}px monospace`;
+    ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("?",fx,fy);
+
+    // Topic label above
+    ctx.fillStyle=`rgba(${rgb},.75)`;ctx.font=`600 ${CELL*.3}px 'Segoe UI'`;
+    ctx.textAlign="center";ctx.textBaseline="bottom";
+    ctx.fillText(q.topic.toUpperCase(),fx,fy-CELL*.72);
+  }
+
+  // Snake body line
+  if(snake.length>1){
+    const [hc,br]=TIERS[tier];
+    const h=snake[0],tl=snake[snake.length-1];
+    const grd=ctx.createLinearGradient(h.x*CELL+CELL/2,h.y*CELL+CELL/2,tl.x*CELL+CELL/2,tl.y*CELL+CELL/2);
+    grd.addColorStop(0,`rgba(${br},.95)`);grd.addColorStop(1,`rgba(${br},.06)`);
     ctx.beginPath();
-    snake.forEach((s,i)=>{ const x=s.x*CELL+CELL/2,y=s.y*CELL+CELL/2; i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
-    ctx.strokeStyle=gr;ctx.lineWidth=CELL*.7;ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke();
+    snake.forEach((s,i)=>{const x=s.x*CELL+CELL/2,y=s.y*CELL+CELL/2;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.strokeStyle=grd;ctx.lineWidth=CELL*.74;ctx.lineJoin="round";ctx.lineCap="round";ctx.stroke();
   }
 
-  // segments
+  // Snake segments
   snake.forEach((s,i)=>{
-    const sx=s.x*CELL+CELL/2, sy=s.y*CELL+CELL/2;
-    const alpha=Math.max(.12, 1-(i/snake.length)*.85);
+    const sx=s.x*CELL+CELL/2,sy=s.y*CELL+CELL/2;
+    const [hc,br]=TIERS[tier];
     if(i===0){
-      // glow
-      const gr=ctx.createRadialGradient(sx,sy,0,sx,sy,CELL*1.3);
-      gr.addColorStop(0,'rgba(167,139,250,.45)');gr.addColorStop(1,'rgba(167,139,250,0)');
-      ctx.fillStyle=gr;ctx.beginPath();ctx.arc(sx,sy,CELL*1.3,0,Math.PI*2);ctx.fill();
-      // head dot
-      ctx.fillStyle='#c4b5fd';ctx.beginPath();ctx.arc(sx,sy,CELL/2-1,0,Math.PI*2);ctx.fill();
-      // ∫ symbol
-      ctx.fillStyle='#1a1030';ctx.font=`bold ${CELL*.7}px serif`;
-      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('∫',sx,sy);
+      // Glow halo
+      const grd=ctx.createRadialGradient(sx,sy,0,sx,sy,CELL*1.45);
+      grd.addColorStop(0,`rgba(${br},.52)`);grd.addColorStop(1,`rgba(${br},0)`);
+      ctx.fillStyle=grd;ctx.beginPath();ctx.arc(sx,sy,CELL*1.45,0,Math.PI*2);ctx.fill();
+      // Head fill
+      ctx.fillStyle=hc;ctx.beginPath();ctx.arc(sx,sy,CELL/2-1,0,Math.PI*2);ctx.fill();
+      // Specular highlight
+      ctx.fillStyle="rgba(255,255,255,.28)";ctx.beginPath();ctx.arc(sx-2,sy-2,CELL/2-5,0,Math.PI*2);ctx.fill();
+      // Integral symbol
+      ctx.fillStyle="rgba(14,9,36,.9)";ctx.font=`bold ${CELL*.74}px serif`;
+      ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("∫",sx,sy);
     } else {
-      ctx.fillStyle=`rgba(124,106,247,${alpha})`;
+      const a=Math.max(.07,1-(i/snake.length)*.92);
+      ctx.fillStyle=`rgba(${br},${a})`;
       ctx.beginPath();ctx.arc(sx,sy,CELL/2-3,0,Math.PI*2);ctx.fill();
+      if(i<7){
+        ctx.fillStyle=`rgba(255,255,255,${.055*(1-i/7)})`;
+        ctx.beginPath();ctx.arc(sx-1,sy-1,CELL/2-5,0,Math.PI*2);ctx.fill();
+      }
     }
   });
+
+  // Particles
+  ctx.save();
+  parts.forEach(p=>{ctx.globalAlpha=p.life;ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();});
+  ctx.restore();
+
+  // Floating text
+  ctx.save();
+  floats.forEach(f=>{
+    ctx.globalAlpha=f.life;ctx.fillStyle=f.col;
+    ctx.font="bold 15px 'Segoe UI'";ctx.textAlign="center";ctx.textBaseline="middle";
+    // Shadow
+    ctx.shadowColor=f.col;ctx.shadowBlur=6;
+    ctx.fillText(f.txt,f.x,f.y);ctx.shadowBlur=0;
+  });
+  ctx.restore();
+
+  // Death flash
+  if(dflash>0){
+    ctx.fillStyle=`rgba(239,68,68,${dflash*.48})`;
+    ctx.fillRect(0,0,W,H);
+    dflash=Math.max(0,dflash-.055);
+  }
 }
 
-// ─── MATH ─────────────────────────────────────────────────────
-function renderAllMath() {
-  if (typeof renderMathInElement==='undefined') return;
+// ── MATH ─────────────────────────────────────────────────────
+function renderAllMath(){
+  if(typeof renderMathInElement==="undefined")return;
   renderMathInElement(document.body,{
-    delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]
+    delimiters:[{left:"\\(",right:"\\)",display:false},{left:"\\[",right:"\\]",display:true}]
   });
 }
 
-// ─── BOOT ─────────────────────────────────────────────────────
-bestUpdate();
-initState();
-overlayShow('home');
-draw();
-(function raf(){ draw(); rafId=requestAnimationFrame(raf); })();
+// ── BOOT ─────────────────────────────────────────────────────
+bestUp();reset();showOv("home");
+(function r(){draw();rafId=requestAnimationFrame(r);})();
 </script>
 </body>
 </html>
