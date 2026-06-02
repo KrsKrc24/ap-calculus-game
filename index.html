@@ -58,7 +58,7 @@
 
     /* ── GAME WRAPPER ── */
     #gw{
-      position:relative;width:580px;height:580px;
+      position:relative;width:560px;height:560px;
       border:1px solid rgba(37,99,235,.4);border-radius:16px;
       overflow:hidden;flex-shrink:0;
       animation:gwPulse 4s ease-in-out infinite;
@@ -67,7 +67,7 @@
       0%,100%{box-shadow:0 0 30px rgba(37,99,235,.2),0 0 70px rgba(37,99,235,.08);}
       50%{box-shadow:0 0 50px rgba(37,99,235,.32),0 0 110px rgba(37,99,235,.14);}
     }
-    @media(max-width:620px){#gw{width:calc(100vw - 32px);height:calc(100vw - 32px);}}
+    @media(max-width:592px){#gw{width:calc(100vw - 32px);height:calc(100vw - 32px);}}
     canvas{display:block;width:100%;height:100%;}
 
     /* ── OVERLAY ── */
@@ -471,12 +471,13 @@ const TIERS=[
 // ── CANVAS + DPR + GRID PRE-RENDER ───────────────────────────
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
-const LOGICAL=580;
+const LOGICAL=560;
 const DPR=Math.min(window.devicePixelRatio||1,3);
 canvas.width=LOGICAL*DPR;canvas.height=LOGICAL*DPR;
 canvas.style.width=LOGICAL+"px";canvas.style.height=LOGICAL+"px";
 ctx.scale(DPR,DPR);
-const CELL=20,COLS=29,ROWS=29,W=LOGICAL,H=LOGICAL;
+// COLS=28 (even) so W/2=280 lands exactly on grid line 14 — axes align cleanly
+const CELL=20,COLS=28,ROWS=28,W=LOGICAL,H=LOGICAL;
 const SPEEDS=[160,132,105,82,65];
 
 // Pre-render static background at full physical resolution (crisp on retina)
@@ -491,64 +492,69 @@ gx.scale(DPR,DPR);
   bg.addColorStop(0,"#0c1420");bg.addColorStop(1,"#07090f");
   gx.fillStyle=bg;gx.fillRect(0,0,W,H);
 
-  // Minor grid — crisp 1px snapped lines
-  gx.strokeStyle="#152035";gx.lineWidth=1;
-  for(let c=0;c<=COLS;c++){
-    const x=Math.round(c*CELL)+.5;
+  // Axis origin: dead center of canvas
+  // With COLS=28, W=560: ax = W/2 = 280 = 14*CELL — lands exactly on a grid line
+  const ax=W/2, ay=H/2;  // 280, 280
+
+  // ── Minor grid: every 1 unit (CELL pixels) ──────────────
+  gx.strokeStyle="#132033"; gx.lineWidth=1;
+  for(let n=-COLS/2; n<=COLS/2; n++){
+    const x=Math.round(ax+n*CELL)+.5;
     gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,H);gx.stroke();
   }
-  for(let r=0;r<=ROWS;r++){
-    const y=Math.round(r*CELL)+.5;
+  for(let n=-ROWS/2; n<=ROWS/2; n++){
+    const y=Math.round(ay+n*CELL)+.5;
     gx.beginPath();gx.moveTo(0,y);gx.lineTo(W,y);gx.stroke();
   }
 
-  // Major grid every 5 cells — brighter blue
-  gx.strokeStyle="#1e3a5f";gx.lineWidth=1;
-  for(let c=0;c<=COLS;c+=5){
-    const x=Math.round(c*CELL)+.5;
+  // ── Major grid: every 5 units ────────────────────────────
+  gx.strokeStyle="#1c3a60"; gx.lineWidth=1.2;
+  for(let n=-COLS/2; n<=COLS/2; n+=5){
+    const x=Math.round(ax+n*CELL)+.5;
     gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,H);gx.stroke();
   }
-  for(let r=0;r<=ROWS;r+=5){
-    const y=Math.round(r*CELL)+.5;
+  for(let n=-ROWS/2; n<=ROWS/2; n+=5){
+    const y=Math.round(ay+n*CELL)+.5;
     gx.beginPath();gx.moveTo(0,y);gx.lineTo(W,y);gx.stroke();
   }
 
-  // Axes — clear blue
-  const ax=Math.floor(COLS/2)*CELL,ay=Math.floor(ROWS/2)*CELL;
-  const axX=Math.round(ax)+.5,ayY=Math.round(ay)+.5;
-  gx.strokeStyle="#2563eb";gx.lineWidth=2;
-  gx.beginPath();gx.moveTo(axX,0);gx.lineTo(axX,H);gx.stroke();
-  gx.beginPath();gx.moveTo(0,ayY);gx.lineTo(W,ayY);gx.stroke();
+  // ── Axes ─────────────────────────────────────────────────
+  const axP=Math.round(ax)+.5, ayP=Math.round(ay)+.5;
+  gx.strokeStyle="#2563eb"; gx.lineWidth=2;
+  gx.beginPath();gx.moveTo(axP,0);gx.lineTo(axP,H);gx.stroke();
+  gx.beginPath();gx.moveTo(0,ayP);gx.lineTo(W,ayP);gx.stroke();
 
-  // Axis arrows
+  // Axis arrowheads
   gx.fillStyle="#2563eb";
   const aw=5;
-  gx.beginPath();gx.moveTo(W-3,ay);gx.lineTo(W-3-aw*2,ay-aw);gx.lineTo(W-3-aw*2,ay+aw);gx.closePath();gx.fill();
-  gx.beginPath();gx.moveTo(ax,3);gx.lineTo(ax-aw,3+aw*2);gx.lineTo(ax+aw,3+aw*2);gx.closePath();gx.fill();
+  gx.beginPath();gx.moveTo(W-2,ay);gx.lineTo(W-2-aw*2,ay-aw);gx.lineTo(W-2-aw*2,ay+aw);gx.closePath();gx.fill();
+  gx.beginPath();gx.moveTo(ax,2);gx.lineTo(ax-aw,2+aw*2);gx.lineTo(ax+aw,2+aw*2);gx.closePath();gx.fill();
 
-  // Tick marks and coordinate labels
-  const half=Math.floor(COLS/2);
+  // ── Tick marks + labels at ±5, ±10 ──────────────────────
   gx.font="bold 9px monospace";
-  for(let c=0;c<=COLS;c+=5){
-    const lbl=c-half;if(lbl===0)continue;
-    const x=c*CELL+CELL/2;
-    gx.strokeStyle="#1d4ed8";gx.lineWidth=1;
-    gx.beginPath();gx.moveTo(Math.round(x)+.5,ay-3);gx.lineTo(Math.round(x)+.5,ay+3);gx.stroke();
-    gx.fillStyle="#3b82f6";gx.textAlign="center";gx.textBaseline="top";
-    gx.fillText(lbl,x,ay+5);
+  // x-axis: labels below the axis
+  for(let n=-10; n<=10; n+=5){
+    if(n===0) continue;
+    const x=Math.round(ax+n*CELL);
+    gx.strokeStyle="#1d4ed8"; gx.lineWidth=1;
+    gx.beginPath();gx.moveTo(x+.5,ay-4);gx.lineTo(x+.5,ay+4);gx.stroke();
+    gx.fillStyle="#3b82f6"; gx.textAlign="center"; gx.textBaseline="top";
+    gx.fillText(n, x, ay+6);
   }
-  for(let r=0;r<=ROWS;r+=5){
-    const lbl=Math.floor(ROWS/2)-r;if(lbl===0)continue;
-    const y=r*CELL+CELL/2;
-    gx.strokeStyle="#1d4ed8";gx.lineWidth=1;
-    gx.beginPath();gx.moveTo(ax-3,Math.round(y)+.5);gx.lineTo(ax+3,Math.round(y)+.5);gx.stroke();
-    gx.fillStyle="#3b82f6";gx.textAlign="right";gx.textBaseline="middle";
-    gx.fillText(lbl,ax-5,y);
+  // y-axis: labels left of axis (n positive = up = smaller canvas-y)
+  for(let n=-10; n<=10; n+=5){
+    if(n===0) continue;
+    const y=Math.round(ay-n*CELL);
+    gx.strokeStyle="#1d4ed8"; gx.lineWidth=1;
+    gx.beginPath();gx.moveTo(ax-4,y+.5);gx.lineTo(ax+4,y+.5);gx.stroke();
+    gx.fillStyle="#3b82f6"; gx.textAlign="right"; gx.textBaseline="middle";
+    gx.fillText(n, ax-7, y);
   }
+
   // Axis name labels
-  gx.fillStyle="#60a5fa";gx.font="bold 10px monospace";
-  gx.textAlign="left";gx.textBaseline="middle";gx.fillText("x",W-10,ay-11);
-  gx.textAlign="center";gx.textBaseline="top";gx.fillText("y",ax+8,5);
+  gx.fillStyle="#60a5fa"; gx.font="bold 10px monospace";
+  gx.textAlign="left"; gx.textBaseline="middle"; gx.fillText("x",W-10,ay-12);
+  gx.textAlign="center"; gx.textBaseline="top"; gx.fillText("y",ax+9,5);
 })();
 
 // ── STATE ────────────────────────────────────────────────────
