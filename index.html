@@ -261,6 +261,7 @@
   <div class="hstat"><div class="hlbl">Speed</div><div class="hval" id="hSpd">x1</div></div>
   <div class="hstat"><div class="hlbl">Streak</div><div class="hval" id="hStrk">0</div></div>
   <div class="hstat"><div class="hlbl">Best</div><div class="hval" id="hBest" style="color:var(--gold)">0</div></div>
+  <div class="hstat" style="border-left:1px solid var(--border)"><div class="hlbl">Day Streak</div><div class="hval" id="hDayStrk" style="color:#fb923c">0🔥</div></div>
 </div>
 
 <!-- GAME CANVAS -->
@@ -288,7 +289,10 @@
         <div class="purow"><div class="pudm" style="background:#fb923c"></div><span style="color:#fb923c;font-weight:700">FLEXTIME</span>:Speed slows for 8 seconds</div>
         <div class="purow"><div class="pudm" style="background:#fde68a"></div><span style="color:#fde68a;font-weight:700">EXTRA CREDIT</span>:Grow by 2 on next correct answer</div>
       </div>
-      <div id="homeHS" style="font-size:.85rem;font-weight:500;color:var(--muted)"></div>
+      <div id="homeStats" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;font-size:.85rem;font-weight:600;color:var(--muted)">
+        <div id="homeHS"></div>
+        <div id="homeDayStrk" style="display:flex;align-items:center;gap:6px"></div>
+      </div>
       <button class="btn btn-p" onclick="startGame()">Play Now</button>
       <div class="blink">Press SPACE to start</div>
     </div>
@@ -460,64 +464,88 @@ const TIERS=[
   ["#6ee7b7","16,185,129"],["#fde68a","234,179,8"],["#fca5a5","239,68,68"]
 ];
 
-// ── CANVAS + GRID PRE-RENDER ──────────────────────────────────
+// ── CANVAS + DPR + GRID PRE-RENDER ───────────────────────────
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
-const CELL=20,COLS=29,ROWS=29,W=canvas.width,H=canvas.height;
+const LOGICAL=580;
+const DPR=Math.min(window.devicePixelRatio||1,3);
+canvas.width=LOGICAL*DPR;canvas.height=LOGICAL*DPR;
+canvas.style.width=LOGICAL+"px";canvas.style.height=LOGICAL+"px";
+ctx.scale(DPR,DPR);
+const CELL=20,COLS=29,ROWS=29,W=LOGICAL,H=LOGICAL;
 const SPEEDS=[160,132,105,82,65];
 
-// Build static background into offscreen canvas ONCE (big perf win)
+// Pre-render static background at full physical resolution (crisp on retina)
 const gridBuf=document.createElement("canvas");
-gridBuf.width=W;gridBuf.height=H;
+gridBuf.width=LOGICAL*DPR;gridBuf.height=LOGICAL*DPR;
 const gx=gridBuf.getContext("2d");
+gx.scale(DPR,DPR);
 
 (function buildGrid(){
-  // Gradient bg
-  const bg=gx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*.82);
-  bg.addColorStop(0,"#13152a");bg.addColorStop(1,"#070810");
+  // Background
+  const bg=gx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*.85);
+  bg.addColorStop(0,"#12142a");bg.addColorStop(1,"#07080f");
   gx.fillStyle=bg;gx.fillRect(0,0,W,H);
 
-  // Minor grid
-  gx.strokeStyle="#1e2244";gx.lineWidth=.8;
-  for(let c=0;c<=COLS;c++){gx.beginPath();gx.moveTo(c*CELL,0);gx.lineTo(c*CELL,H);gx.stroke();}
-  for(let r=0;r<=ROWS;r++){gx.beginPath();gx.moveTo(0,r*CELL);gx.lineTo(W,r*CELL);gx.stroke();}
+  // Minor grid — crisp 1px lines snapped to half-pixel
+  gx.strokeStyle="#1c2048";gx.lineWidth=1;
+  for(let c=0;c<=COLS;c++){
+    const x=Math.round(c*CELL)+.5;
+    gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,H);gx.stroke();
+  }
+  for(let r=0;r<=ROWS;r++){
+    const y=Math.round(r*CELL)+.5;
+    gx.beginPath();gx.moveTo(0,y);gx.lineTo(W,y);gx.stroke();
+  }
 
-  // Major grid (every 5)
-  gx.strokeStyle="#282e60";gx.lineWidth=1.2;
-  for(let c=0;c<=COLS;c+=5){gx.beginPath();gx.moveTo(c*CELL,0);gx.lineTo(c*CELL,H);gx.stroke();}
-  for(let r=0;r<=ROWS;r+=5){gx.beginPath();gx.moveTo(0,r*CELL);gx.lineTo(W,r*CELL);gx.stroke();}
+  // Major grid every 5 cells — clearly brighter
+  gx.strokeStyle="#2d3468";gx.lineWidth=1;
+  for(let c=0;c<=COLS;c+=5){
+    const x=Math.round(c*CELL)+.5;
+    gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,H);gx.stroke();
+  }
+  for(let r=0;r<=ROWS;r+=5){
+    const y=Math.round(r*CELL)+.5;
+    gx.beginPath();gx.moveTo(0,y);gx.lineTo(W,y);gx.stroke();
+  }
 
-  // Axes
+  // Axes — bright and sharp
   const ax=Math.floor(COLS/2)*CELL,ay=Math.floor(ROWS/2)*CELL;
-  gx.strokeStyle="#353c82";gx.lineWidth=2;
-  gx.beginPath();gx.moveTo(ax,0);gx.lineTo(ax,H);gx.stroke();
-  gx.beginPath();gx.moveTo(0,ay);gx.lineTo(W,ay);gx.stroke();
+  const axX=Math.round(ax)+.5,ayY=Math.round(ay)+.5;
+  gx.strokeStyle="#4850a0";gx.lineWidth=2;
+  gx.beginPath();gx.moveTo(axX,0);gx.lineTo(axX,H);gx.stroke();
+  gx.beginPath();gx.moveTo(0,ayY);gx.lineTo(W,ayY);gx.stroke();
 
   // Axis arrows
-  gx.fillStyle="#353c82";
-  const aw=6;
-  gx.beginPath();gx.moveTo(W-2,ay);gx.lineTo(W-2-aw*2,ay-aw);gx.lineTo(W-2-aw*2,ay+aw);gx.closePath();gx.fill();
-  gx.beginPath();gx.moveTo(ax,2);gx.lineTo(ax-aw,2+aw*2);gx.lineTo(ax+aw,2+aw*2);gx.closePath();gx.fill();
+  gx.fillStyle="#4850a0";
+  const aw=5;
+  gx.beginPath();gx.moveTo(W-3,ay);gx.lineTo(W-3-aw*2,ay-aw);gx.lineTo(W-3-aw*2,ay+aw);gx.closePath();gx.fill();
+  gx.beginPath();gx.moveTo(ax,3);gx.lineTo(ax-aw,3+aw*2);gx.lineTo(ax+aw,3+aw*2);gx.closePath();gx.fill();
 
-  // Coordinate labels + tick marks
+  // Tick marks and coordinate labels
   const half=Math.floor(COLS/2);
-  gx.fillStyle="#323878";gx.font="bold 9px monospace";
-  gx.textAlign="center";gx.textBaseline="top";
+  gx.font="bold 9px monospace";
   for(let c=0;c<=COLS;c+=5){
     const lbl=c-half;if(lbl===0)continue;
-    gx.fillText(lbl,c*CELL+CELL/2,ay+6);
-    gx.strokeStyle="#323878";gx.lineWidth=1.2;
-    gx.beginPath();gx.moveTo(c*CELL+CELL/2,ay-4);gx.lineTo(c*CELL+CELL/2,ay+4);gx.stroke();
+    const x=c*CELL+CELL/2;
+    // tick
+    gx.strokeStyle="#3e4590";gx.lineWidth=1;
+    gx.beginPath();gx.moveTo(Math.round(x)+.5,ay-3);gx.lineTo(Math.round(x)+.5,ay+3);gx.stroke();
+    // label
+    gx.fillStyle="#4a52a0";gx.textAlign="center";gx.textBaseline="top";
+    gx.fillText(lbl,x,ay+5);
   }
-  gx.textAlign="right";gx.textBaseline="middle";
   for(let r=0;r<=ROWS;r+=5){
     const lbl=Math.floor(ROWS/2)-r;if(lbl===0)continue;
-    gx.fillText(lbl,ax-6,r*CELL+CELL/2);
-    gx.strokeStyle="#323878";gx.lineWidth=1.2;
-    gx.beginPath();gx.moveTo(ax-4,r*CELL+CELL/2);gx.lineTo(ax+4,r*CELL+CELL/2);gx.stroke();
+    const y=r*CELL+CELL/2;
+    gx.strokeStyle="#3e4590";gx.lineWidth=1;
+    gx.beginPath();gx.moveTo(ax-3,Math.round(y)+.5);gx.lineTo(ax+3,Math.round(y)+.5);gx.stroke();
+    gx.fillStyle="#4a52a0";gx.textAlign="right";gx.textBaseline="middle";
+    gx.fillText(lbl,ax-5,y);
   }
-  gx.fillStyle="#3a4490";gx.font="bold 10px monospace";
-  gx.textAlign="left";gx.textBaseline="middle";gx.fillText("x",W-9,ay-10);
+  // Axis name labels
+  gx.fillStyle="#5560b8";gx.font="bold 10px monospace";
+  gx.textAlign="left";gx.textBaseline="middle";gx.fillText("x",W-10,ay-11);
   gx.textAlign="center";gx.textBaseline="top";gx.fillText("y",ax+8,5);
 })();
 
@@ -702,12 +730,14 @@ function die(){
   const g=grade(score);
   const gl=document.getElementById("goGrade");
   gl.textContent=g.lbl;gl.style.color=g.col;
+  const ds=parseInt(localStorage.getItem("igDayStreak")||"0");
   document.getElementById("goChips").innerHTML=`
     <div class="chip">Length <strong>${snake.length}</strong></div>
     <div class="chip">Correct <strong>${correct}</strong></div>
-    <div class="chip">Streak <strong>${streak}</strong></div>
+    <div class="chip">Answer Streak <strong>${streak}</strong></div>
     <div class="chip">Speed <strong>x${tier+1}</strong></div>
-    <div class="chip">Best <strong>${Math.max(score,best)}</strong></div>`;
+    <div class="chip">Best <strong>${Math.max(score,best)}</strong></div>
+    <div class="chip">Day Streak <strong style="color:#fb923c">${ds}🔥</strong></div>`;
   showOv("go");
 }
 function goHome(){gState="home";clearInterval(loopId);showOv("home");}
@@ -779,11 +809,36 @@ function hudUp(){
   se.textContent=streak;
   se.style.color=streak>=5?"#f97316":streak>=3?"var(--gold)":streak>0?"var(--correct)":"var(--muted)";
 }
+// ── DAILY STREAK ─────────────────────────────────────────────
+function loadDayStreak(){
+  const today=new Date().toISOString().slice(0,10);
+  const last=localStorage.getItem("igLastDay");
+  let s=parseInt(localStorage.getItem("igDayStreak")||"0");
+  if(!last){
+    s=1;
+  } else {
+    const diff=Math.round((new Date(today)-new Date(last))/86400000);
+    if(diff===1) s++;
+    else if(diff>1) s=1;
+    // diff===0 means already played today, no change
+  }
+  localStorage.setItem("igLastDay",today);
+  localStorage.setItem("igDayStreak",String(s));
+  return s;
+}
+
 function bestUp(){
   const b=localStorage.getItem("igBest")||"0";
+  const ds=parseInt(localStorage.getItem("igDayStreak")||"0");
   document.getElementById("hBest").textContent=b;
+  document.getElementById("hDayStrk").textContent=ds+"🔥";
   const hh=document.getElementById("homeHS");
-  if(hh)hh.innerHTML=+b>0?`Personal best: <strong style="color:var(--gold)">${b}</strong>`:"";
+  if(hh)hh.innerHTML=+b>0?`Best: <strong style="color:var(--gold)">${b}</strong>`:"";
+  const hds=document.getElementById("homeDayStrk");
+  if(hds){
+    const fire=ds>=7?"🔥🔥":ds>=3?"🔥":"";
+    hds.innerHTML=`<span style="font-size:1.1rem">${fire||"🔥"}</span><span><strong style="color:#fb923c">${ds} day${ds===1?"":"s"}</strong> streak${ds>=7?" — on fire!":ds>=3?" — keep it up!":""}</span>`;
+  }
 }
 
 // ── OVERLAY ──────────────────────────────────────────────────
@@ -811,8 +866,8 @@ function cbadge(txt,col,x,y){
 
 // ── DRAW (uses pre-rendered grid buffer) ─────────────────────
 function draw(){
-  // ONE draw call for the entire static background (grid + axes + labels)
-  ctx.drawImage(gridBuf,0,0);
+  // Single draw call — gridBuf is DPR-scaled, draw at logical W×H
+  ctx.drawImage(gridBuf,0,0,W,H);
 
   // Animated background curves when overlay is showing
   if(gState!=="play"){
@@ -841,22 +896,27 @@ function draw(){
     const q=QS[food.qi];
     const fx=food.x*CELL+CELL/2,fy=food.y*CELL+CELL/2;
     const col=tc(q.topic),rgb=h2r(col);
-    const pu2=.58+.42*Math.sin(Date.now()/370);
+    const pulse=.6+.4*Math.sin(Date.now()/380);
     const orb=Date.now()/680;
-    const grd=ctx.createRadialGradient(fx,fy,0,fx,fy,CELL*1.75);
-    grd.addColorStop(0,`rgba(${rgb},${pu2*.45})`);grd.addColorStop(1,`rgba(${rgb},0)`);
-    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(fx,fy,CELL*1.75,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle=`rgba(${rgb},.68)`;ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(fx,fy,CELL*.92,orb,orb+Math.PI*1.3);ctx.stroke();
-    ctx.strokeStyle=`rgba(${rgb},.22)`;ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(fx,fy,CELL*.92,0,Math.PI*2);ctx.stroke();
-    ctx.fillStyle=col;ctx.beginPath();ctx.arc(fx,fy,CELL/2-1,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="rgba(7,6,22,.85)";ctx.beginPath();ctx.arc(fx,fy,CELL/2-3,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=col;ctx.font=`700 ${CELL*.58}px 'Space Grotesk',sans-serif`;
+    // Tight, focused glow (not a huge blur)
+    const grd=ctx.createRadialGradient(fx,fy,CELL*.3,fx,fy,CELL*1.1);
+    grd.addColorStop(0,`rgba(${rgb},${pulse*.55})`);grd.addColorStop(1,`rgba(${rgb},0)`);
+    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(fx,fy,CELL*1.1,0,Math.PI*2);ctx.fill();
+    // Full outline circle
+    ctx.strokeStyle=`rgba(${rgb},.45)`;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(fx,fy,CELL*.82,0,Math.PI*2);ctx.stroke();
+    // Spinning arc on top
+    ctx.strokeStyle=`rgba(${rgb},.9)`;ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(fx,fy,CELL*.82,orb,orb+Math.PI*1.2);ctx.stroke();
+    // Main circle — solid and clear
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(fx,fy,CELL*.42,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="rgba(7,6,22,.88)";ctx.beginPath();ctx.arc(fx,fy,CELL*.3,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=col;ctx.font=`700 ${CELL*.52}px 'Space Grotesk',sans-serif`;
     ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("?",fx,fy);
-    ctx.fillStyle=`rgba(${rgb},.8)`;ctx.font=`600 ${CELL*.28}px 'Space Grotesk',sans-serif`;
+    // Topic label
+    ctx.fillStyle=`rgba(${rgb},.9)`;ctx.font=`600 ${CELL*.27}px 'Space Grotesk',sans-serif`;
     ctx.textAlign="center";ctx.textBaseline="bottom";
-    ctx.fillText(q.topic.toUpperCase(),fx,fy-CELL*.76);
+    ctx.fillText(q.topic.toUpperCase(),fx,fy-CELL*.7);
   }
 
   // ── POWER-UP (spinning diamond) ────────────────────────────
@@ -865,67 +925,76 @@ function draw(){
     const px=pu.x*CELL+CELL/2,py=pu.y*CELL+CELL/2;
     const col=pt.col,rgb=pt.rgb;
     const rot=Date.now()/520;
-    const pu2=.55+.45*Math.sin(Date.now()/290);
-    const grd=ctx.createRadialGradient(px,py,0,px,py,CELL*2);
-    grd.addColorStop(0,`rgba(${rgb},${pu2*.48})`);grd.addColorStop(1,`rgba(${rgb},0)`);
-    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(px,py,CELL*2,0,Math.PI*2);ctx.fill();
+    const pulse=.55+.45*Math.sin(Date.now()/290);
+    // Tight glow
+    const grd=ctx.createRadialGradient(px,py,CELL*.2,px,py,CELL*1.2);
+    grd.addColorStop(0,`rgba(${rgb},${pulse*.5})`);grd.addColorStop(1,`rgba(${rgb},0)`);
+    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(px,py,CELL*1.2,0,Math.PI*2);ctx.fill();
+    // Spinning dashed ring
     ctx.save();ctx.translate(px,py);ctx.rotate(rot);
-    ctx.strokeStyle=`rgba(${rgb},.65)`;ctx.lineWidth=1.5;
-    ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(0,0,CELL*.88,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle=`rgba(${rgb},.7)`;ctx.lineWidth=1.5;
+    ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(0,0,CELL*.82,0,Math.PI*2);ctx.stroke();
     ctx.setLineDash([]);ctx.restore();
-    ctx.save();ctx.translate(px,py);ctx.rotate(rot*.6);
-    ctx.beginPath();ctx.moveTo(0,-CELL*.65);ctx.lineTo(CELL*.48,0);
-    ctx.lineTo(0,CELL*.65);ctx.lineTo(-CELL*.48,0);ctx.closePath();
+    // Diamond
+    ctx.save();ctx.translate(px,py);ctx.rotate(rot*.5);
+    ctx.beginPath();ctx.moveTo(0,-CELL*.58);ctx.lineTo(CELL*.42,0);
+    ctx.lineTo(0,CELL*.58);ctx.lineTo(-CELL*.42,0);ctx.closePath();
     ctx.fillStyle=col;ctx.fill();
-    ctx.strokeStyle="rgba(255,255,255,.2)";ctx.lineWidth=1;ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,.25)";ctx.lineWidth=1;ctx.stroke();
     ctx.restore();
-    ctx.fillStyle="rgba(8,6,22,.9)";ctx.font=`700 ${CELL*.44}px 'Space Grotesk',sans-serif`;
+    ctx.fillStyle="rgba(8,6,22,.92)";ctx.font=`700 ${CELL*.42}px 'Space Grotesk',sans-serif`;
     ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(pt.sym,px,py);
-    ctx.fillStyle=`rgba(${rgb},.85)`;ctx.font=`700 ${CELL*.27}px 'Space Grotesk',sans-serif`;
+    ctx.fillStyle=`rgba(${rgb},.9)`;ctx.font=`700 ${CELL*.26}px 'Space Grotesk',sans-serif`;
     ctx.textAlign="center";ctx.textBaseline="bottom";
-    ctx.fillText(pt.label,px,py-CELL*.82);
+    ctx.fillText(pt.label,px,py-CELL*.76);
   }
 
   // ── SNAKE ──────────────────────────────────────────────────
   const [hc,br]=TIERS[tier];
+  // Thin connector line between segments — shows path without blurring
   if(snake.length>1){
-    const h=snake[0],tl=snake[snake.length-1];
-    const grd=ctx.createLinearGradient(h.x*CELL+CELL/2,h.y*CELL+CELL/2,tl.x*CELL+CELL/2,tl.y*CELL+CELL/2);
-    grd.addColorStop(0,`rgba(${br},.96)`);grd.addColorStop(1,`rgba(${br},.05)`);
     ctx.beginPath();
     snake.forEach((s,i)=>{const x=s.x*CELL+CELL/2,y=s.y*CELL+CELL/2;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
-    ctx.strokeStyle=grd;ctx.lineWidth=CELL*.76;ctx.lineJoin="round";ctx.lineCap="round";ctx.stroke();
+    ctx.strokeStyle=`rgba(${br},.55)`;ctx.lineWidth=CELL*.38;
+    ctx.lineJoin="round";ctx.lineCap="round";ctx.stroke();
   }
+  // Shield / EC rings
   if(shielded){
     const sx=snake[0].x*CELL+CELL/2,sy=snake[0].y*CELL+CELL/2;
     const sr=.5+.5*Math.sin(Date.now()/190);
-    ctx.strokeStyle=`rgba(74,222,128,${.5+sr*.4})`;ctx.lineWidth=2.5;
-    ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(sx,sy,CELL*.95+sr*3,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle=`rgba(74,222,128,${.6+sr*.35})`;ctx.lineWidth=2;
+    ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(sx,sy,CELL*.88+sr*2,0,Math.PI*2);ctx.stroke();
     ctx.setLineDash([]);
   }
   if(ecActive){
     const sx=snake[0].x*CELL+CELL/2,sy=snake[0].y*CELL+CELL/2;
     const sr=.5+.5*Math.sin(Date.now()/170);
-    ctx.strokeStyle=`rgba(253,230,138,${.5+sr*.4})`;ctx.lineWidth=2;
-    ctx.setLineDash([4,5]);ctx.beginPath();ctx.arc(sx,sy,CELL*1.02+sr*3,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle=`rgba(253,230,138,${.6+sr*.35})`;ctx.lineWidth=2;
+    ctx.setLineDash([4,5]);ctx.beginPath();ctx.arc(sx,sy,CELL*.94+sr*2,0,Math.PI*2);ctx.stroke();
     ctx.setLineDash([]);
   }
+  // Individual segment circles — clean and distinct
   snake.forEach((s,i)=>{
     const sx=s.x*CELL+CELL/2,sy=s.y*CELL+CELL/2;
     if(i===0){
-      const grd=ctx.createRadialGradient(sx,sy,0,sx,sy,CELL*1.5);
-      grd.addColorStop(0,`rgba(${br},.55)`);grd.addColorStop(1,`rgba(${br},0)`);
-      ctx.fillStyle=grd;ctx.beginPath();ctx.arc(sx,sy,CELL*1.5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle=hc;ctx.beginPath();ctx.arc(sx,sy,CELL/2-1,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="rgba(255,255,255,.3)";ctx.beginPath();ctx.arc(sx-2,sy-2,CELL/2-5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="rgba(12,8,34,.92)";ctx.font=`700 ${CELL*.76}px serif`;
+      // Small focused glow on head only
+      const grd=ctx.createRadialGradient(sx,sy,CELL*.1,sx,sy,CELL*.9);
+      grd.addColorStop(0,`rgba(${br},.5)`);grd.addColorStop(1,`rgba(${br},0)`);
+      ctx.fillStyle=grd;ctx.beginPath();ctx.arc(sx,sy,CELL*.9,0,Math.PI*2);ctx.fill();
+      // Head — solid filled circle
+      ctx.fillStyle=hc;ctx.beginPath();ctx.arc(sx,sy,CELL*.44,0,Math.PI*2);ctx.fill();
+      // Specular highlight
+      ctx.fillStyle="rgba(255,255,255,.32)";
+      ctx.beginPath();ctx.arc(sx-CELL*.12,sy-CELL*.12,CELL*.18,0,Math.PI*2);ctx.fill();
+      // ∫ symbol
+      ctx.fillStyle="rgba(10,6,30,.94)";ctx.font=`700 ${CELL*.7}px serif`;
       ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("∫",sx,sy);
     } else {
-      const a=Math.max(.06,1-(i/snake.length)*.93);
-      ctx.fillStyle=`rgba(${br},${a})`;
-      ctx.beginPath();ctx.arc(sx,sy,CELL/2-3,0,Math.PI*2);ctx.fill();
-      if(i<8){ctx.fillStyle=`rgba(255,255,255,${.05*(1-i/8)})`;
-        ctx.beginPath();ctx.arc(sx-1,sy-1,CELL/2-5,0,Math.PI*2);ctx.fill();}
+      // Body — decreasing brightness, consistent size
+      const alpha=Math.max(0.3,1-(i/snake.length)*.72);
+      const radius=Math.max(CELL*.24,CELL*.4*(1-i/(snake.length+4)));
+      ctx.fillStyle=`rgba(${br},${alpha})`;
+      ctx.beginPath();ctx.arc(sx,sy,radius,0,Math.PI*2);ctx.fill();
     }
   });
 
@@ -972,6 +1041,7 @@ function renderAllMath(){
 }
 
 // ── BOOT ─────────────────────────────────────────────────────
+loadDayStreak();
 bestUp();reset();showOv("home");
 (function raf(){draw();rafId=requestAnimationFrame(raf);})();
 </script>
