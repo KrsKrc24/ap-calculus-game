@@ -236,9 +236,113 @@
     }
     .db:active{background:var(--accent);}
     .db.blank{background:transparent;border-color:transparent;pointer-events:none;}
+
+    /* ── INTRO CUTSCENE ── */
+    #intro{
+      position:fixed;inset:0;z-index:500;
+      background:#000;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;overflow:hidden;
+    }
+    #introBg{
+      position:absolute;inset:0;
+      background:radial-gradient(ellipse 70% 60% at 50% 40%,#080d24 0%,#000 70%);
+      pointer-events:none;
+    }
+    #introWrap{
+      position:relative;z-index:1;
+      width:100%;max-width:640px;
+      padding:32px 40px;
+      min-height:100vh;
+      display:flex;flex-direction:column;justify-content:center;
+      gap:0;
+    }
+    #iSkip{
+      position:fixed;top:20px;right:24px;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.45);font-family:var(--font);
+      font-size:.72rem;font-weight:600;letter-spacing:1.5px;
+      padding:7px 14px;border-radius:5px;cursor:pointer;
+      transition:all .15s;z-index:2;
+    }
+    #iSkip:hover{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);}
+    #iChapter{
+      font-size:.6rem;font-weight:700;letter-spacing:4px;
+      text-transform:uppercase;color:#f59e0b;
+      margin-bottom:10px;opacity:0;
+      animation:iFade .5s ease forwards;
+    }
+    #iTitle{
+      font-size:clamp(1.8rem,5vw,3rem);font-weight:800;
+      color:#fff;letter-spacing:1px;line-height:1.1;
+      margin-bottom:28px;opacity:0;
+      animation:iSlide .6s .15s cubic-bezier(.22,1,.36,1) forwards;
+    }
+    #iLines{display:flex;flex-direction:column;gap:6px;min-height:260px;}
+    .il{
+      font-size:clamp(.9rem,2.5vw,1.05rem);font-weight:400;
+      color:#94a3b8;line-height:1.7;
+      opacity:0;transform:translateY(8px);
+      transition:opacity .4s ease,transform .4s ease;
+    }
+    .il.show{opacity:1;transform:none;}
+    .il em{color:#cbd5e1;font-style:italic;}
+    .il strong{color:#e2e8f8;font-weight:700;}
+    .sn{color:#f59e0b;font-weight:600;}  /* character name */
+    .sg{color:#10b981;font-weight:700;}  /* grade */
+    .sr{color:#ef4444;font-weight:700;}  /* danger/red */
+    .sw{color:#fff;font-weight:800;font-size:1.1em;} /* white emphasis */
+    #iContinue{
+      margin-top:32px;font-size:.68rem;font-weight:600;
+      letter-spacing:2.5px;text-transform:uppercase;
+      color:rgba(255,255,255,.3);opacity:0;
+      transition:opacity .4s;
+      animation:blink 1.4s ease infinite;
+    }
+    #iFinal{
+      display:none;flex-direction:column;align-items:flex-start;gap:16px;
+      margin-top:36px;
+    }
+    #iFinal p{
+      font-size:.8rem;font-weight:500;color:rgba(255,255,255,.35);
+      letter-spacing:1.5px;text-transform:uppercase;
+    }
+    #iBegin{
+      background:#2563eb;color:#fff;border:none;cursor:pointer;
+      font-family:var(--font);font-size:1rem;font-weight:700;
+      letter-spacing:.5px;padding:14px 40px;border-radius:8px;
+      box-shadow:0 0 30px rgba(37,99,235,.45);
+      transition:all .14s;
+    }
+    #iBegin:hover{background:#1d4ed8;transform:translateY(-2px);
+      box-shadow:0 0 40px rgba(37,99,235,.6);}
+    @keyframes iFade{from{opacity:0}to{opacity:1}}
+    @keyframes iSlide{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+    @keyframes iBar{from{width:0}to{width:100%}}
+    #iProgress{
+      position:fixed;bottom:0;left:0;height:2px;background:rgba(37,99,235,.4);
+      transition:width .5s ease;
+    }
   </style>
 </head>
 <body>
+
+<!-- INTRO CUTSCENE -->
+<div id="intro">
+  <div id="introBg"></div>
+  <div id="introWrap" onclick="advanceIntro()">
+    <div id="iChapter"></div>
+    <div id="iTitle"></div>
+    <div id="iLines"></div>
+    <div id="iContinue">CLICK TO CONTINUE</div>
+    <div id="iFinal">
+      <p>Your banishment begins now.</p>
+      <button id="iBegin" onclick="beginGame(event)">Integrate Your Way Out &nbsp;→</button>
+    </div>
+  </div>
+  <button id="iSkip" onclick="skipIntro(event)">SKIP ›</button>
+  <div id="iProgress"></div>
+</div>
 
 <!-- HUD -->
 <div id="hud">
@@ -1031,10 +1135,210 @@ function renderAllMath(){
   });
 }
 
+// ── INTRO STORY ──────────────────────────────────────────────
+const STORY=[
+  {ch:"CHAPTER I",title:"THE LEGEND",lines:[
+    "Long before the final battle,",
+    "there was a student.",
+    " ",
+    "Some called him gifted.",
+    "Some called him untouchable.",
+    " ",
+    "He called himself <em>inevitable.</em>",
+    " ",
+    "Precalculus &nbsp;—&nbsp; <span class='sg'>A+</span>",
+    "Algebra II &nbsp;—&nbsp; <span class='sg'>A+</span>",
+    " ",
+    "Every test. Every quiz. Every problem set.",
+    "<span class='sw'>Destroyed.</span>",
+  ]},
+  {ch:"CHAPTER II",title:"MS. HARTEL",lines:[
+    "Then came AP Calculus AB.",
+    " ",
+    "He walked in like he owned the room.",
+    " ",
+    "<span class='sn'>Ms. Hartel</span> had other plans.",
+    " ",
+    "Derivatives at 6 AM.",
+    "Related rates. Implicit differentiation.",
+    "Optimization problems that made no sense.",
+    " ",
+    "For the first time in his life —",
+    "he <em>struggled.</em>",
+    " ",
+    "<span class='sn'>Ms. Hartel</span> didn't blink.",
+    "<em>\"You think limits are hard? Wait.\"</em>",
+  ]},
+  {ch:"CHAPTER III",title:"THE VICTORY",lines:[
+    "He fought.",
+    "He grinded.",
+    "He watched every YouTube video known to man.",
+    " ",
+    "And somehow —",
+    " ",
+    "AP Calc AB: <span class='sg'>PASSED.</span>",
+    " ",
+    "A hard-earned, barely-deserved victory.",
+    " ",
+    "But the real test was just beginning.",
+  ]},
+  {ch:"CHAPTER IV",title:"THE RISHIN MOVE",lines:[
+    "AP Calculus BC. <span class='sn'>Ms. Crain</span>'s class.",
+    " ",
+    "Series. Parametrics. Polar coordinates.",
+    "Taylor polynomials. Convergence tests.",
+    " ",
+    "The final exam. Everything on the line.",
+    " ",
+    "Then — a moment of weakness.",
+    "The Series Test.",
+    " ",
+    "He glanced left.",
+    "His partner <span class='sn'>Rishin</span> had the answers.",
+    " ",
+    "A subtle lean. A tilt of the head.",
+    "Eyes drifting just slightly to the left.",
+    " ",
+    "<span class='sr'>The Rishin Move.</span>",
+    " ",
+    "<span class='sn'>Ms. Crain</span> saw everything.",
+  ]},
+  {ch:"CHAPTER V",title:"BANISHED",lines:[
+    "<em>\"You thought you could cheat in MY classroom?\"</em>",
+    " ",
+    "The room went silent.",
+    "Pencils stopped. Time stopped.",
+    " ",
+    "A single point on the coordinate plane",
+    "opened beneath his desk.",
+    " ",
+    "He fell.",
+    "Through the graph.",
+    "Past the x-axis.",
+    "Past the y-axis.",
+    "Into the void.",
+    " ",
+    "<span class='sr'>Banished to the mathematical void.</span>",
+    " ",
+    "The only way out:",
+    "<strong>Integrate. Differentiate. Converge.</strong>",
+    "Prove you belong here.",
+  ]},
+  {ch:"FINAL CHAPTER",title:"YOUR RECKONING",lines:[
+    "Now you are him.",
+    " ",
+    "Trapped in the coordinate plane.",
+    "Every problem node is a test.",
+    "Every wrong answer pulls you deeper.",
+    " ",
+    "Collect every question.",
+    "Answer correctly.",
+    "Grow stronger.",
+    " ",
+    "Show <span class='sn'>Ms. Crain</span> what you're made of.",
+    " ",
+    "<strong>Pass AP Calc BC.</strong>",
+    " ",
+    "<em>Or stay banished. Forever.</em>",
+  ]},
+];
+
+let iSlide=0,iLine=0,iTimer=null,iDone=false;
+
+function runIntro(){
+  iSlide=0;iLine=0;iDone=false;
+  showSlide(0);
+  document.addEventListener("keydown",introKey);
+}
+function introKey(e){
+  if(e.key===" "||e.key==="Enter")advanceIntro();
+  if(e.key==="Escape")skipIntro(null);
+}
+function showSlide(idx){
+  iSlide=idx;iLine=0;
+  const s=STORY[idx];
+  const pct=Math.round(((idx)/STORY.length)*100);
+  document.getElementById("iProgress").style.width=pct+"%";
+  // Re-animate chapter/title
+  const ch=document.getElementById("iChapter");
+  const ti=document.getElementById("iTitle");
+  ch.style.animation="none"; ti.style.animation="none";
+  ch.textContent=s.ch; ti.textContent=s.title;
+  void ch.offsetWidth; void ti.offsetWidth;
+  ch.style.animation=""; ti.style.animation="";
+  document.getElementById("iLines").innerHTML="";
+  document.getElementById("iContinue").style.opacity="0";
+  document.getElementById("iFinal").style.display="none";
+  nextLine();
+}
+function nextLine(){
+  const s=STORY[iSlide];
+  if(iLine>=s.lines.length){
+    // slide done
+    if(iSlide<STORY.length-1){
+      document.getElementById("iContinue").style.opacity="1";
+    } else {
+      iDone=true;
+      document.getElementById("iFinal").style.display="flex";
+      document.getElementById("iContinue").style.opacity="0";
+      document.getElementById("iProgress").style.width="100%";
+    }
+    return;
+  }
+  const txt=s.lines[iLine];
+  const p=document.createElement("p");
+  p.className="il";
+  p.innerHTML=txt===" "?"&nbsp;":txt;
+  document.getElementById("iLines").appendChild(p);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>p.classList.add("show")));
+  iLine++;
+  iTimer=setTimeout(nextLine,txt===" "?300:650);
+}
+function advanceIntro(){
+  if(iDone) return;
+  clearTimeout(iTimer);
+  const s=STORY[iSlide];
+  if(iLine<s.lines.length){
+    // dump remaining lines instantly
+    while(iLine<s.lines.length){
+      const txt=s.lines[iLine];
+      const p=document.createElement("p");
+      p.className="il show";
+      p.innerHTML=txt===" "?"&nbsp;":txt;
+      document.getElementById("iLines").appendChild(p);
+      iLine++;
+    }
+    if(iSlide<STORY.length-1){
+      document.getElementById("iContinue").style.opacity="1";
+    } else {
+      iDone=true;
+      document.getElementById("iFinal").style.display="flex";
+      document.getElementById("iContinue").style.opacity="0";
+      document.getElementById("iProgress").style.width="100%";
+    }
+  } else if(iSlide<STORY.length-1){
+    document.getElementById("iContinue").style.opacity="0";
+    setTimeout(()=>showSlide(iSlide+1),200);
+  }
+}
+function skipIntro(e){
+  if(e)e.stopPropagation();
+  clearTimeout(iTimer);
+  document.removeEventListener("keydown",introKey);
+  document.getElementById("intro").style.display="none";
+}
+function beginGame(e){
+  e.stopPropagation();
+  clearTimeout(iTimer);
+  document.removeEventListener("keydown",introKey);
+  document.getElementById("intro").style.display="none";
+}
+
 // ── BOOT ─────────────────────────────────────────────────────
 loadDayStreak();
 bestUp();reset();showOv("home");
 (function raf(){draw();rafId=requestAnimationFrame(raf);})();
+runIntro();
 </script>
 </body>
 </html>
