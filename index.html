@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>INTEGRAL | AP Calculus</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
@@ -246,76 +246,82 @@
     }
     #introBg{
       position:absolute;inset:0;
-      background:radial-gradient(ellipse 70% 60% at 50% 40%,#080d24 0%,#000 70%);
+      background:radial-gradient(ellipse 70% 60% at 50% 40%,#111 0%,#000 70%);
       pointer-events:none;
     }
     #introWrap{
       position:relative;z-index:1;
-      width:100%;max-width:640px;
+      width:100%;max-width:600px;
       padding:32px 40px;
       min-height:100vh;
       display:flex;flex-direction:column;justify-content:center;
       gap:0;
+      font-family:'Nunito',sans-serif;
     }
     #iSkip{
       position:fixed;top:20px;right:24px;
-      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
-      color:rgba(255,255,255,.45);font-family:var(--font);
+      background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
+      color:rgba(255,255,255,.5);font-family:'Nunito',sans-serif;
       font-size:.72rem;font-weight:600;letter-spacing:1.5px;
       padding:7px 14px;border-radius:5px;cursor:pointer;
       transition:all .15s;z-index:2;
     }
     #iSkip:hover{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);}
     #iChapter{
-      font-size:.6rem;font-weight:700;letter-spacing:4px;
-      text-transform:uppercase;color:#f59e0b;
-      margin-bottom:10px;opacity:0;
+      font-size:.7rem;font-weight:800;letter-spacing:4px;
+      text-transform:uppercase;color:#fb923c;
+      margin-bottom:8px;opacity:0;
       animation:iFade .5s ease forwards;
+      font-family:'Nunito',sans-serif;
     }
     #iTitle{
-      font-size:clamp(1.8rem,5vw,3rem);font-weight:800;
-      color:#fff;letter-spacing:1px;line-height:1.1;
-      margin-bottom:28px;opacity:0;
+      font-size:clamp(2rem,5.5vw,3.2rem);font-weight:900;
+      color:#ffffff;letter-spacing:.5px;line-height:1.1;
+      margin-bottom:26px;opacity:0;
       animation:iSlide .6s .15s cubic-bezier(.22,1,.36,1) forwards;
+      font-family:'Nunito',sans-serif;
     }
-    #iLines{display:flex;flex-direction:column;gap:6px;min-height:260px;}
+    #iLines{display:flex;flex-direction:column;gap:4px;min-height:240px;}
     .il{
-      font-size:clamp(.9rem,2.5vw,1.05rem);font-weight:400;
-      color:#94a3b8;line-height:1.7;
-      opacity:0;transform:translateY(8px);
-      transition:opacity .4s ease,transform .4s ease;
+      font-size:clamp(.95rem,2.5vw,1.08rem);font-weight:500;
+      color:#d1d5db;line-height:1.72;
+      opacity:0;transform:translateY(6px);
+      transition:opacity .35s ease,transform .35s ease;
+      font-family:'Nunito',sans-serif;
     }
     .il.show{opacity:1;transform:none;}
-    .il em{color:#cbd5e1;font-style:italic;}
-    .il strong{color:#e2e8f8;font-weight:700;}
-    .sn{color:#f59e0b;font-weight:600;}  /* character name */
-    .sg{color:#10b981;font-weight:700;}  /* grade */
-    .sr{color:#ef4444;font-weight:700;}  /* danger/red */
-    .sw{color:#fff;font-weight:800;font-size:1.1em;} /* white emphasis */
+    .il em{color:#f3f4f6;font-style:italic;}
+    .il strong{color:#ffffff;font-weight:800;}
+    .sn{color:#fb923c;font-weight:700;}   /* character names - orange */
+    .sg{color:#4ade80;font-weight:800;}   /* grades - green */
+    .sr{color:#f87171;font-weight:800;}   /* danger - red */
+    .sw{color:#ffffff;font-weight:900;}   /* strong white */
     #iContinue{
-      margin-top:32px;font-size:.68rem;font-weight:600;
-      letter-spacing:2.5px;text-transform:uppercase;
-      color:rgba(255,255,255,.3);opacity:0;
+      margin-top:28px;font-size:.7rem;font-weight:700;
+      letter-spacing:2px;text-transform:uppercase;
+      color:rgba(255,255,255,.28);opacity:0;
       transition:opacity .4s;
       animation:blink 1.4s ease infinite;
+      font-family:'Nunito',sans-serif;
     }
     #iFinal{
-      display:none;flex-direction:column;align-items:flex-start;gap:16px;
-      margin-top:36px;
+      display:none;flex-direction:column;align-items:flex-start;gap:14px;
+      margin-top:32px;
     }
     #iFinal p{
-      font-size:.8rem;font-weight:500;color:rgba(255,255,255,.35);
+      font-size:.78rem;font-weight:600;color:rgba(255,255,255,.32);
       letter-spacing:1.5px;text-transform:uppercase;
+      font-family:'Nunito',sans-serif;
     }
     #iBegin{
-      background:#2563eb;color:#fff;border:none;cursor:pointer;
-      font-family:var(--font);font-size:1rem;font-weight:700;
-      letter-spacing:.5px;padding:14px 40px;border-radius:8px;
-      box-shadow:0 0 30px rgba(37,99,235,.45);
+      background:#f97316;color:#fff;border:none;cursor:pointer;
+      font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:800;
+      letter-spacing:.3px;padding:14px 40px;border-radius:10px;
+      box-shadow:0 0 28px rgba(249,115,22,.45);
       transition:all .14s;
     }
-    #iBegin:hover{background:#1d4ed8;transform:translateY(-2px);
-      box-shadow:0 0 40px rgba(37,99,235,.6);}
+    #iBegin:hover{background:#ea6c0a;transform:translateY(-2px);
+      box-shadow:0 0 40px rgba(249,115,22,.6);}
     @keyframes iFade{from{opacity:0}to{opacity:1}}
     @keyframes iSlide{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
     @keyframes iBar{from{width:0}to{width:100%}}
@@ -336,8 +342,8 @@
     <div id="iLines"></div>
     <div id="iContinue">CLICK TO CONTINUE</div>
     <div id="iFinal">
-      <p>Your banishment begins now.</p>
-      <button id="iBegin" onclick="beginGame(event)">Integrate Your Way Out &nbsp;→</button>
+      <p>Time to get out of here.</p>
+      <button id="iBegin" onclick="beginGame(event)">Start Playing &nbsp;→</button>
     </div>
   </div>
   <button id="iSkip" onclick="skipIntro(event)">SKIP ›</button>
@@ -1137,109 +1143,113 @@ function renderAllMath(){
 
 // ── INTRO STORY ──────────────────────────────────────────────
 const STORY=[
-  {ch:"CHAPTER I",title:"THE LEGEND",lines:[
-    "Long before the final battle,",
-    "there was a student.",
+  {ch:"CHAPTER I",title:"The Legend",lines:[
+    "Before all this, you were kind of built different.",
     " ",
-    "Some called him gifted.",
-    "Some called him untouchable.",
+    "Precalculus: <span class='sg'>A+</span>",
+    "Algebra 2: <span class='sg'>A+</span>",
     " ",
-    "He called himself <em>inevitable.</em>",
+    "Did not even have to study.",
+    "Every test was free points.",
+    "Every quiz was a nap.",
     " ",
-    "Precalculus &nbsp;—&nbsp; <span class='sg'>A+</span>",
-    "Algebra II &nbsp;—&nbsp; <span class='sg'>A+</span>",
-    " ",
-    "Every test. Every quiz. Every problem set.",
-    "<span class='sw'>Destroyed.</span>",
+    "You were <em>that</em> kid.",
   ]},
-  {ch:"CHAPTER II",title:"MS. HARTEL",lines:[
-    "Then came AP Calculus AB.",
+  {ch:"CHAPTER II",title:"Ms. Hartel",lines:[
+    "Then you signed up for AP Calc AB.",
+    "You thought it would be the same thing.",
     " ",
-    "He walked in like he owned the room.",
+    "<span class='sn'>Ms. Hartel</span> thought that was hilarious.",
     " ",
-    "<span class='sn'>Ms. Hartel</span> had other plans.",
+    "Derivatives. Chain rule. Related rates at 7 AM.",
+    "Optimization problems that made zero sense.",
     " ",
-    "Derivatives at 6 AM.",
-    "Related rates. Implicit differentiation.",
-    "Optimization problems that made no sense.",
+    "You went home and watched the entire",
+    "24 hour <span class='sn'>Organic Chemistry Tutor</span> playlist.",
+    "All of it. In one sitting.",
     " ",
-    "For the first time in his life —",
-    "he <em>struggled.</em>",
+    "For the first time in your life,",
+    "you actually had to <strong>try.</strong>",
     " ",
-    "<span class='sn'>Ms. Hartel</span> didn't blink.",
-    "<em>\"You think limits are hard? Wait.\"</em>",
+    "<span class='sn'>Ms. Hartel</span> did not go easy on you.",
+    "She made it harder.",
+    "<em>\"Good. Keep going.\"</em>",
   ]},
-  {ch:"CHAPTER III",title:"THE VICTORY",lines:[
-    "He fought.",
-    "He grinded.",
-    "He watched every YouTube video known to man.",
+  {ch:"CHAPTER III",title:"Passed (Somehow)",lines:[
+    "You grinded every night.",
+    "You did every practice problem.",
+    "You watched more YouTube videos than any human should.",
     " ",
-    "And somehow —",
+    "You even went to tutoring.",
+    "Do not tell anyone.",
     " ",
     "AP Calc AB: <span class='sg'>PASSED.</span>",
     " ",
-    "A hard-earned, barely-deserved victory.",
+    "You celebrated like you won a championship.",
+    "You told everyone you knew.",
     " ",
-    "But the real test was just beginning.",
+    "You should have stopped there.",
   ]},
-  {ch:"CHAPTER IV",title:"THE RISHIN MOVE",lines:[
+  {ch:"CHAPTER IV",title:"The Rishin Move",lines:[
     "AP Calculus BC. <span class='sn'>Ms. Crain</span>'s class.",
     " ",
-    "Series. Parametrics. Polar coordinates.",
-    "Taylor polynomials. Convergence tests.",
+    "Series. Convergence tests. Taylor polynomials.",
+    "The absolute worst unit of your life.",
     " ",
-    "The final exam. Everything on the line.",
+    "The final exam came.",
+    "You hit the series section.",
     " ",
-    "Then — a moment of weakness.",
-    "The Series Test.",
+    "Complete blank.",
     " ",
-    "He glanced left.",
-    "His partner <span class='sn'>Rishin</span> had the answers.",
+    "Now, <span class='sn'>Rishin</span> was famous for one thing.",
+    "That guy was always looking at someone else's paper.",
+    "Every single test. Guaranteed.",
+    "Teachers could never catch him.",
     " ",
-    "A subtle lean. A tilt of the head.",
-    "Eyes drifting just slightly to the left.",
+    "So you tried it.",
+    "You leaned over just a little.",
+    "You looked at your partner's paper.",
     " ",
-    "<span class='sr'>The Rishin Move.</span>",
+    "<span class='sr'>You pulled the Rishin Move.</span>",
     " ",
-    "<span class='sn'>Ms. Crain</span> saw everything.",
+    "<span class='sn'>Ms. Crain</span> caught you immediately.",
   ]},
-  {ch:"CHAPTER V",title:"BANISHED",lines:[
-    "<em>\"You thought you could cheat in MY classroom?\"</em>",
+  {ch:"CHAPTER V",title:"Banished",lines:[
+    "<em>\"Cheating? In my classroom?\"</em>",
     " ",
-    "The room went silent.",
-    "Pencils stopped. Time stopped.",
+    "She took your test.",
+    "She took your pencil.",
+    "She gave you a look.",
     " ",
-    "A single point on the coordinate plane",
-    "opened beneath his desk.",
+    "Then the floor turned into a coordinate plane",
+    "and you fell through it.",
     " ",
-    "He fell.",
-    "Through the graph.",
-    "Past the x-axis.",
-    "Past the y-axis.",
-    "Into the void.",
+    "We are not going to explain that part.",
     " ",
-    "<span class='sr'>Banished to the mathematical void.</span>",
+    "You are in the math void now.",
     " ",
-    "The only way out:",
-    "<strong>Integrate. Differentiate. Converge.</strong>",
-    "Prove you belong here.",
+    "<span class='sr'>Fully banished by Ms. Crain.</span>",
+    " ",
+    "The only way out is through the math.",
+    "Integrate your way back.",
+    "There is no other option.",
   ]},
-  {ch:"FINAL CHAPTER",title:"YOUR RECKONING",lines:[
-    "Now you are him.",
+  {ch:"FINAL CHAPTER",title:"Your Way Out",lines:[
+    "Now you are in the coordinate plane.",
     " ",
-    "Trapped in the coordinate plane.",
-    "Every problem node is a test.",
-    "Every wrong answer pulls you deeper.",
+    "Collect every problem node on the grid.",
+    "Answer correctly and you grow bigger.",
+    "Answer wrong and you shrink.",
     " ",
-    "Collect every question.",
-    "Answer correctly.",
-    "Grow stronger.",
+    "Get hit by a wall or yourself and it is over.",
     " ",
-    "Show <span class='sn'>Ms. Crain</span> what you're made of.",
+    "But if you can make it through,",
+    "you show <span class='sn'>Ms. Crain</span> you actually learned something.",
     " ",
     "<strong>Pass AP Calc BC.</strong>",
     " ",
-    "<em>Or stay banished. Forever.</em>",
+    "Or stay in the void forever.",
+    "Your call.",
   ]},
 ];
 
